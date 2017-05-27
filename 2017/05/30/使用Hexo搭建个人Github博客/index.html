@@ -9,21 +9,34 @@
   <title>使用Hexo搭建个人Github博客 | vickze的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="参考网上的文章总算把自己的Github博客搭建出来了，在这把我的搭建步骤分享出来，或许可以帮助到有需要的人。搭建个人博客-hexo+github详细完整步骤零基础免费搭建个人博客-hexo+github上面两个链接是我所参考的文章，写的也很详细，如果没看懂我的步骤也可以看看上面的。">
-<meta name="keywords" content="hexo,博客">
+<meta name="keywords" content="Hexo,博客">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用Hexo搭建个人Github博客">
 <meta property="og:url" content="//blog.95.top/2017/05/30/使用Hexo搭建个人Github博客/index.html">
 <meta property="og:site_name" content="vickze的博客">
 <meta property="og:description" content="参考网上的文章总算把自己的Github博客搭建出来了，在这把我的搭建步骤分享出来，或许可以帮助到有需要的人。搭建个人博客-hexo+github详细完整步骤零基础免费搭建个人博客-hexo+github上面两个链接是我所参考的文章，写的也很详细，如果没看懂我的步骤也可以看看上面的。">
-<meta property="og:updated_time" content="2017-05-24T15:22:05.200Z">
+<meta property="og:image" content="//blog.95.top/static/img/2017-5-25_22-21-15.png">
+<meta property="og:image" content="//blog.95.top/static/img/2017-5-25_22-33-36.png">
+<meta property="og:image" content="//blog.95.top/static/img/2017-5-25_22-38-12.png">
+<meta property="og:image" content="//blog.95.top/static/img/2017-5-22_21-28-49.png">
+<meta property="og:image" content="//blog.95.top/static/img/2017-5-22_21-29-39.png">
+<meta property="og:image" content="//blog.95.top/static/img/2017-5-22_21-29-57.png">
+<meta property="og:image" content="//blog.95.top/static/img/2017-5-22_21-30-53.png">
+<meta property="og:image" content="//blog.95.top/static/img/2017-5-27_22-31-44.png">
+<meta property="og:image" content="//blog.95.top/static/img/2017-5-27_22-37-26.png">
+<meta property="og:image" content="//blog.95.top/static/img/2017-5-27_22-53-59.png">
+<meta property="og:image" content="//blog.95.top/static/img/2017-5-27_23-8-46.png">
+<meta property="og:image" content="//blog.95.top/static/img/2017-5-27_23-21-41.png">
+<meta property="og:updated_time" content="2017-05-27T15:28:39.776Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用Hexo搭建个人Github博客">
 <meta name="twitter:description" content="参考网上的文章总算把自己的Github博客搭建出来了，在这把我的搭建步骤分享出来，或许可以帮助到有需要的人。搭建个人博客-hexo+github详细完整步骤零基础免费搭建个人博客-hexo+github上面两个链接是我所参考的文章，写的也很详细，如果没看懂我的步骤也可以看看上面的。">
+<meta name="twitter:image" content="//blog.95.top/static/img/2017-5-25_22-21-15.png">
   
     <link rel="alternative" href="/atom.xml" title="vickze的博客" type="application/atom+xml">
   
   
-    <link rel="icon" href="/favicon.png">
+    <link rel="icon" href="/static/favicon.ico">
   
   <link rel="stylesheet" type="text/css" href="/./main.b3331d.css">
   <style type="text/css">
@@ -47,7 +60,7 @@
 <div class="intrude-less">
 	<header id="header" class="inner">
 		<a href="/" class="profilepic">
-			<img src="/static/img/zero.png" class="js-avatar">
+			<img src="/static/head.jpg" class="js-avatar">
 		</a>
 		<hgroup>
 		  <h1 class="header-author"><a href="/">vickze</a></h1>
@@ -97,7 +110,7 @@
 	<div class="intrude-less">
 		<header id="header" class="inner">
 			<div class="profilepic">
-				<img src="/static/img/zero.png" class="js-avatar">
+				<img src="/static/head.jpg" class="js-avatar">
 			</div>
 			<hgroup>
 			  <h1 class="header-author js-header-author">vickze</h1>
@@ -161,9 +174,33 @@
     <div class="article-entry" itemprop="articleBody">
       
         <p>参考网上的文章总算把自己的Github博客搭建出来了，在这把我的搭建步骤分享出来，或许可以帮助到有需要的人。<br><a href="http://www.jianshu.com/p/189fd945f38f" target="_blank" rel="external">搭建个人博客-hexo+github详细完整步骤</a><br><a href="http://blog.csdn.net/jzooo/article/details/46781805" target="_blank" rel="external">零基础免费搭建个人博客-hexo+github</a><br>上面两个链接是我所参考的文章，写的也很详细，如果没看懂我的步骤也可以看看上面的。</p>
-<a id="more"></a>
-<h1 id="一、准备环境"><a href="#一、准备环境" class="headerlink" title="一、准备环境"></a>一、准备环境</h1><p>我们需要安装Git、Node.js、Hexo以及注册一个GitHub账号。<br>下载Git、Nodejs可以选择在官网下载，也可以去CSDN下载，大部分都是不需要积分的。PS：官网下载网速超级慢，不知道是资源问题还是墙的原因。<br><a href="https://git-for-windows.github.io/" target="_blank" rel="external">Git官网下载地址</a><br><a href="https://nodejs.org/en/" target="_blank" rel="external">Node.js官网下载地址</a><br><a href="http://download.csdn.net/search/0/10/0/2/1/Git%202.13.0" target="_blank" rel="external">Git CSDN下载</a><br><a href="http://download.csdn.net/search/0/10/0/2/1/Node.js%20v6.10.3" target="_blank" rel="external">Node.js CSDN下载</a></p>
-<h2 id="1、安装GIT"><a href="#1、安装GIT" class="headerlink" title="1、安装GIT"></a>1、安装GIT</h2><h2 id="2、安装Node-js"><a href="#2、安装Node-js" class="headerlink" title="2、安装Node.js"></a>2、安装Node.js</h2><h2 id="3、安装Hexo"><a href="#3、安装Hexo" class="headerlink" title="3、安装Hexo"></a>3、安装Hexo</h2><h2 id="4、注册Github以及创建仓库"><a href="#4、注册Github以及创建仓库" class="headerlink" title="4、注册Github以及创建仓库"></a>4、注册Github以及创建仓库</h2>
+<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><h1 id="一、准备阶段"><a href="#一、准备阶段" class="headerlink" title="一、准备阶段"></a>一、准备阶段</h1><p>我们需要安装Git、Node.js、Hexo以及注册一个GitHub账号。<br>下载Git、Nodejs可以选择在官网下载，也可以去CSDN下载，大部分都是不需要积分的。PS：官网下载网速超级慢，不知道是资源问题还是墙的原因。<br><a href="https://git-for-windows.github.io/" target="_blank" rel="external">Git官网下载地址</a><br><a href="https://nodejs.org/en/" target="_blank" rel="external">Node.js官网下载地址</a><br><a href="http://download.csdn.net/search/0/10/0/2/1/Git%202.13.0" target="_blank" rel="external">Git CSDN下载</a><br><a href="http://download.csdn.net/search/0/10/0/2/1/Node.js%20v6.10.3" target="_blank" rel="external">Node.js CSDN下载</a></p>
+<h3 id="1、安装Git"><a href="#1、安装Git" class="headerlink" title="1、安装Git"></a>1、安装Git</h3><p><img src="/static/img/2017-5-25_22-21-15.png" alt=""></p>
+<p>打开Git安装程序，点击NEXT来到这个页面，选择要安装的组件，可以全选也可以默认，然后一路NEXT即可，安装路径根据自己习惯更改。</p>
+<h3 id="2、安装Node-js"><a href="#2、安装Node-js" class="headerlink" title="2、安装Node.js"></a>2、安装Node.js</h3><p><img src="/static/img/2017-5-25_22-33-36.png" alt=""><br>同样打开Node.js安装程序，一路默认即可，安装路径根据自己习惯更改。</p>
+<h3 id="3、安装Hexo"><a href="#3、安装Hexo" class="headerlink" title="3、安装Hexo"></a>3、安装Hexo</h3><p>安装Hexo就稍微繁琐点，不过大家一定不能急，耐心等待安装，一般来说按照步骤慢慢来都是没有问题的。<br>首先在任意地方右键，点击“Git Bash Here”。<br><img src="/static/img/2017-5-25_22-38-12.png" alt=""><br>使用NPM命令安装，为防止被墙，这里使用淘宝NPM镜像，输入以下命令等待安装完成：</p>
+<pre><code>npm install -g cnpm --registry=https://registry.npm.taobao.org
+</code></pre><p><img src="/static/img/2017-5-22_21-28-49.png" alt=""><br>耐心等待完成后，继续输入命令：</p>
+<pre><code>cnpm install -g hexo-cli
+</code></pre><p><img src="/static/img/2017-5-22_21-29-39.png" alt=""><br>等待完成，再输入命令：</p>
+<pre><code>cnpm install hexo --save
+</code></pre><p><img src="/static/img/2017-5-22_21-29-57.png" alt=""><br>至此Hexo安装完成，使用查看版本命令检查是否正常安装：</p>
+<pre><code>hexo -v
+</code></pre><p><img src="/static/img/2017-5-22_21-30-53.png" alt=""></p>
+<h3 id="4、注册Github以及创建仓库"><a href="#4、注册Github以及创建仓库" class="headerlink" title="4、注册Github以及创建仓库"></a>4、注册Github以及创建仓库</h3><p>接下来我们注册Github账号，使用常用邮箱注册即可，过程比较简单这里就不细讲了。<br>注册成功登录后，来到我的仓库页面，点击New repository。</p>
+<p><img src="/static/img/2017-5-27_22-31-44.png" alt=""></p>
+<p>注意Repository name一定得是yourname.github.io，这样才能使用这个地址访问到你的Github page，填好Repository name，点击Create repository。（我这里因为之前创建过，所以报同名错误，大家第一次创建的话可以忽略）<br>。</p>
+<p>在<a href="http://blog.csdn.net/jzooo/article/details/46781805" target="_blank" rel="external">零基础免费搭建个人博客-hexo+github</a>里还有个‘启用GitHub Page’的步骤，但我发现页面都已经变得不一样了，然后在<a href="http://www.jianshu.com/p/189fd945f38f" target="_blank" rel="external">搭建个人博客-hexo+github详细完整步骤</a>是没有这个步骤的，我自己搭建的也是没有这个步骤就成功了，所以可能现在Github应该把这个优化了，大家到Create repository步骤就ok了。</p>
+<p><img src="/static/img/2017-5-27_22-37-26.png" alt=""></p>
+<p>创建仓库后我们后面的步骤需要用到仓库地址，进到yourname.github.io仓库页面，看下图。</p>
+<p><img src="/static/img/2017-5-27_22-53-59.png" alt=""></p>
+<h1 id="二、本地启动与部署到Github"><a href="#二、本地启动与部署到Github" class="headerlink" title="二、本地启动与部署到Github"></a>二、本地启动与部署到Github</h1><h3 id="1、本地启动"><a href="#1、本地启动" class="headerlink" title="1、本地启动"></a>1、本地启动</h3><p>创建一个新文件夹（我的是在E盘创建的Blog），进入该文件夹，右键Git Bash Here，输入 <code>hexo init</code> 命令。PS：由于博主搭建成功后并没有推倒再来一遍，所以到这里就没有截图了，大家键入命令后，在程序运行过程记得一定要耐心等待。</p>
+<p>初始化成功后，大概是下面的目录结构（我这个是部署到git后，有多了几个文件）。</p>
+<p><img src="/static/img/2017-5-27_23-8-46.png" alt=""></p>
+<p>接下来输入 <code>hexo s -g</code> 命令就能启动了，启动后浏览器访问localhost:4000就能看到你的博客效果了，接下来我们把本地部署到Git，打开_config.yml进行配置，如下图，复制你的仓库地址给repo参数。</p>
+<p><img src="/static/img/2017-5-27_23-21-41.png" alt=""></p>
+<p>在Git命令输入 <code>npm install hexo-deployer-git  --save</code> 安装hexo-deployer-git自动部署发布工具，等待安装完成，输入 <code>hexo clean &amp;&amp; hexo g &amp;&amp; hexo d</code> 命令发布到Github，这里注意第一次发布的话会需要输入你的Github账号跟密码，输入就</p>
+
       
 
       
@@ -176,7 +213,7 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">hexo</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">Hexo</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
@@ -248,16 +285,6 @@
 </article>
 
   
-<nav id="article-nav">
-  
-  
-    <a href="/2017/05/30/假装有第二篇博客/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">使用Hexo搭建个人Github博客</div>
-      <i class="icon-circle-right"></i>
-    </a>
-  
-</nav>
-
 
 
 
@@ -266,6 +293,15 @@
   
   
 
+  
+  <div id="SOHUCS" sid="使用Hexo搭建个人Github博客" ></div> 
+<script type="text/javascript"> 
+(function(){ 
+var appid = "cyt264yFm"; 
+var conf = "prod_7507cff17be98b60537359862fe5f3a6"; 
+var width = window.innerWidth || document.documentElement.clientWidth; 
+if (width < 960) { 
+window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="http://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("http://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
   
 
   
@@ -352,7 +388,7 @@ return o(t,i(n),arguments.length<3?void 0:u(arguments[2]))}})},function(t,n,r){v
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">hexo</a>
+                <a href="javascript:void(0)" class="js-tag color5">Hexo</a>
               </li>
              
               <li class="article-tag-list-item">
