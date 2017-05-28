@@ -6,15 +6,15 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="//blog.95.top">
-  <title>使用Hexo搭建个人Github博客 | vickze的博客</title>
+  <title>使用Hexo搭建个人Github博客 | vickze&#39;blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="参考网上的文章总算把自己的Github博客搭建出来了，在这把我的搭建步骤分享出来，或许可以帮助到有需要的人。搭建个人博客-hexo+github详细完整步骤零基础免费搭建个人博客-hexo+github上面两个链接是我所参考的文章，写的也很详细，如果没看懂我的步骤也可以看看上面的。">
+  <meta name="description" content="使用Hexo搭建个人Github博客">
 <meta name="keywords" content="Hexo,博客">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用Hexo搭建个人Github博客">
 <meta property="og:url" content="//blog.95.top/2017/05/30/使用Hexo搭建个人Github博客/index.html">
-<meta property="og:site_name" content="vickze的博客">
-<meta property="og:description" content="参考网上的文章总算把自己的Github博客搭建出来了，在这把我的搭建步骤分享出来，或许可以帮助到有需要的人。搭建个人博客-hexo+github详细完整步骤零基础免费搭建个人博客-hexo+github上面两个链接是我所参考的文章，写的也很详细，如果没看懂我的步骤也可以看看上面的。">
+<meta property="og:site_name" content="vickze&#39;blog">
+<meta property="og:description" content="使用Hexo搭建个人Github博客">
 <meta property="og:image" content="//blog.95.top/static/img/2017-5-25_22-21-15.png">
 <meta property="og:image" content="//blog.95.top/static/img/2017-5-25_22-33-36.png">
 <meta property="og:image" content="//blog.95.top/static/img/2017-5-25_22-38-12.png">
@@ -29,13 +29,14 @@
 <meta property="og:image" content="//blog.95.top/static/img/2017-5-27_23-8-46.png">
 <meta property="og:image" content="//blog.95.top/static/img/2017-5-27_23-21-41.png">
 <meta property="og:image" content="//blog.95.top/static/img/2017-5-27_23-33-28.png">
-<meta property="og:updated_time" content="2017-05-27T16:34:30.043Z">
+<meta property="og:image" content="//blog.95.top/static/img/20170529001417.png">
+<meta property="og:updated_time" content="2017-05-28T16:35:01.997Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用Hexo搭建个人Github博客">
-<meta name="twitter:description" content="参考网上的文章总算把自己的Github博客搭建出来了，在这把我的搭建步骤分享出来，或许可以帮助到有需要的人。搭建个人博客-hexo+github详细完整步骤零基础免费搭建个人博客-hexo+github上面两个链接是我所参考的文章，写的也很详细，如果没看懂我的步骤也可以看看上面的。">
+<meta name="twitter:description" content="使用Hexo搭建个人Github博客">
 <meta name="twitter:image" content="//blog.95.top/static/img/2017-5-25_22-21-15.png">
   
-    <link rel="alternative" href="/atom.xml" title="vickze的博客" type="application/atom+xml">
+    <link rel="alternative" href="/atom.xml" title="vickze&#39;blog" type="application/atom+xml">
   
   
     <link rel="icon" href="/static/favicon.ico">
@@ -191,7 +192,7 @@
 <p><img src="/static/img/2017-5-27_22-31-44.png" alt=""></p>
 <p>注意Repository name一定得是yourname.github.io，这样才能使用这个地址访问到你的Github page，填好Repository name，点击Create repository。（我这里因为之前创建过，所以报同名错误，大家第一次创建的话可以忽略）。</p>
 <p><img src="/static/img/2017-5-27_22-37-26.png" alt=""></p>
-<p>在<a href="http://blog.csdn.net/jzooo/article/details/46781805" target="_blank" rel="external">零基础免费搭建个人博客-hexo+github</a>里还有个‘启用GitHub Page’的步骤，但我发现页面都已经变得不一样了，最新的页面如下所示，只需要Choose Theme就自动启用Github Page了。</p>
+<p>在<a href="http://blog.csdn.net/jzooo/article/details/46781805" target="_blank" rel="external">零基础免费搭建个人博客-hexo+github</a>里有个‘启用GitHub Page’的步骤，但我发现页面都已经变得不一样了，最新的页面如下所示，只需要Choose Theme就会自动启用Github Page了。</p>
 <p><img src="/static/img/2017-5-27_23-46-36.png" alt=""></p>
 <p>创建仓库后我们后面的步骤需要用到仓库地址，进到yourname.github.io仓库页面，看下图。</p>
 <p><img src="/static/img/2017-5-27_22-53-59.png" alt=""></p>
@@ -201,9 +202,12 @@
 <p>接下来输入 <code>hexo s -g</code> 命令就能启动了，启动后浏览器访问localhost:4000就能看到你的博客效果了。</p>
 <h3 id="2、部署到Github"><a href="#2、部署到Github" class="headerlink" title="2、部署到Github"></a>2、部署到Github</h3><p>本地成功后下面就要部署到Git了，打开_config.yml进行配置，如下图，复制你的仓库地址给repo参数(上面有讲怎么复制）。</p>
 <p><img src="/static/img/2017-5-27_23-21-41.png" alt=""></p>
-<p>在Git命令窗口输入 <code>npm install hexo-deployer-git  --save</code> 安装hexo-deployer-git自动部署发布工具，等待安装完成，输入 <code>hexo clean &amp;&amp; hexo g &amp;&amp; hexo d</code> 命令发布到Github，这里注意第一次发布的话会需要输入你的Github账号跟密码，等待出现下图的信息就说明发布成功了，在浏览器输入yourname.github.io就可以看到效果了。</p>
+<p>在Git命令窗口输入 <code>npm install hexo-deployer-git  --save</code> 安装hexo-deployer-git自动部署发布工具，等待安装完成，输入 <code>hexo clean &amp;&amp; hexo g &amp;&amp; hexo d</code> 命令发布到Github，这里注意第一次发布的话会需要输入你的Github账号跟密码，等待出现下图的信息就说明发布成功了，在浏览器输入yourname.github.io就可以看到你的博客了。</p>
 <p><img src="/static/img/2017-5-27_23-33-28.png" alt=""></p>
-<h1 id="三、选择主题与配置域名"><a href="#三、选择主题与配置域名" class="headerlink" title="三、选择主题与配置域名"></a>三、选择主题与配置域名</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">		System.out.println(<span class="string">""</span>);</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h1 id="三、选择主题与配置域名"><a href="#三、选择主题与配置域名" class="headerlink" title="三、选择主题与配置域名"></a>三、选择主题与配置域名</h1><h3 id="1、选择主题"><a href="#1、选择主题" class="headerlink" title="1、选择主题"></a>1、选择主题</h3><p>完成上面的步骤之后呢，可能有人会觉得默认的Hexo主题不是特别好看（至少博主是那么认为的），所以我们可以给博客选择一个适合自己的主题，使用命令 <code>git clone https://github.com/iissnan/hexo-theme-nextthemes/[theme]</code> 来下载一个新的主题，[theme]为主题名。下载完成后，修改_config.yml的theme参数来配置主题，见下图。</p>
+<p><img src="/static/img/20170529001417.png" alt=""></p>
+<p>附上链接：<a href="https://www.zhihu.com/question/24422335" target="_blank" rel="external">有哪些好看的 Hexo 主题？</a><br>博主选择的主题是yilia，这里我遇到个坑就是：使用yilia主题有了两个_config.yml文件，一个是我们一直用到的，另一个是yilia主题目录下的，启用yilia的某些功能需要在我们一直用到的_config.yml文件配置，而yilia主题的定制是在yilia目录下的_config.yml配置，其他主题可能也会有这样的情况，这一点稍微注意下。</p>
+<h3 id="2、配置域名"><a href="#2、配置域名" class="headerlink" title="2、配置域名"></a>2、配置域名</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">		System.out.println(<span class="string">""</span>);</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <h1 id="四、发布自己的第一篇博客"><a href="#四、发布自己的第一篇博客" class="headerlink" title="四、发布自己的第一篇博客"></a>四、发布自己的第一篇博客</h1>
       
 
