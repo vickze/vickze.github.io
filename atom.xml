@@ -1,0 +1,1278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>vickze&#39;blog</title>
+  
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://blog.yk95.top/"/>
+  <updated>2019-02-20T07:04:45.978Z</updated>
+  <id>http://blog.yk95.top/</id>
+  
+  <author>
+    <name>vickze</name>
+    <email>zyk@yk95.top</email>
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title></title>
+    <link href="http://blog.yk95.top/2019/02/20/Mysql%E4%B8%BB%E4%BB%8E/"/>
+    <id>http://blog.yk95.top/2019/02/20/Mysql主从/</id>
+    <published>2019-02-20T03:06:17.552Z</published>
+    <updated>2019-02-20T07:04:45.978Z</updated>
+    
+    <content type="html"><![CDATA[<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker cp <span class="string">mysql:</span><span class="regexp">/etc/</span>mysql <span class="regexp">/etc/</span>mysql</div></pre></td></tr></table></figure>
+<p>创建/etc/mysql/mysql_master、/etc/mysql/mysql_slave目录，将/etc/mysql中拷贝至这两个文件夹</p>
+<p>修改/etc/mysql/mysql_master/my.cnf文件，添加以下配置内容</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="section">[mysqld]</span></div><div class="line"><span class="attr">log-bin</span>=mysql-bin</div><div class="line"><span class="attr">server-id</span>=<span class="number">1</span></div></pre></td></tr></table></figure>
+<p>启动mysql_master</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker <span class="keyword">run</span><span class="bash"> --name mysql_master -v /etc/mysql/mysql_master:/etc/mysql -p 3307:3306 <span class="_">-e</span> MYSQL_ROOT_PASSWORD=123456 <span class="_">-d</span> mysql</span></div></pre></td></tr></table></figure>
+<p>修改/etc/mysql/mysql_slave/my.cnf文件，添加以下配置内容</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="section">[mysqld]</span></div><div class="line"><span class="attr">server-id</span>=<span class="number">2</span></div></pre></td></tr></table></figure>
+<p>启动mysql_slave</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker <span class="keyword">run</span><span class="bash"> --name mysql_slave -v /etc/mysql/mysql_slave:/etc/mysql -p 3308:3306 <span class="_">-e</span> MYSQL_ROOT_PASSWORD=123456 <span class="_">-d</span> mysql</span></div></pre></td></tr></table></figure>
+<p>进入mysql_master</p>
+<figure class="highlight armasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="symbol">docker</span> exec -<span class="keyword">it </span>mysql_master <span class="keyword">bash</span></div><div class="line"></div><div class="line"><span class="symbol">mysql</span> -u root -p</div></pre></td></tr></table></figure>
+<p>在master节点创建一个用户slave，用于slave节点链接master节点时使用。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">USER</span> <span class="string">'slave'</span>@<span class="string">''</span> <span class="keyword">IDENTIFIED</span> <span class="keyword">WITH</span> mysql_native_password <span class="keyword">BY</span> <span class="string">'123456'</span>;</div><div class="line"></div><div class="line"><span class="keyword">GRANT</span> <span class="keyword">REPLICATION</span> <span class="keyword">SLAVE</span> <span class="keyword">ON</span> *.* <span class="keyword">TO</span> <span class="string">'slave'</span>@<span class="string">''</span>;</div></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">SHOW</span> <span class="keyword">MASTER</span> <span class="keyword">STATUS</span>;</div></pre></td></tr></table></figure>
+<p>进入mysql_slave，执行以下命令，其中MASTER_LOG_FILE、MASTER_LOG_POS值为<figure class="highlight plain"><figcaption><span>MASTER STATUS;```显示值</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div></pre></td></tr></table></figure></p>
+<p>CHANGE MASTER TO<br>MASTER_HOST=’192.168.244.137’,<br>MASTER_USER=’slave’,<br>MASTER_PORT=3307,<br>MASTER_PASSWORD=’123456’,<br>MASTER_LOG_FILE=’mysql-bin.000003’,<br>MASTER_LOG_POS=409;<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div></pre></td></tr></table></figure></p>
+<p>start slave;</p>
+<p>show slave status\G;<br>```</p>
+<p><img src="/static/img/mysql_slave.jpg" alt=""></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;figure class=&quot;highlight groovy&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;1&lt;/div&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;div class=&quot;li
+    
+    </summary>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Redis内存淘汰策略</title>
+    <link href="http://blog.yk95.top/2019/02/15/Redis%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5/"/>
+    <id>http://blog.yk95.top/2019/02/15/Redis内存淘汰策略/</id>
+    <published>2019-02-14T16:00:00.000Z</published>
+    <updated>2019-02-18T07:03:46.468Z</updated>
+    
+    <content type="html"><![CDATA[<p>现在实际项目中用到redis的越来越多，今天心血来潮研究了下Redis内存的淘汰策略。</p>
+<p>所谓内存淘汰策略，就是在往redis里面存储key时内存不足执行的策略。</p>
+<p>首先使用Docker启动redis</p>
+<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><figure class="highlight awk"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run -d -v <span class="regexp">/usr/</span>local<span class="regexp">/etc/</span>redis<span class="regexp">/redis.conf:/u</span>sr<span class="regexp">/local/</span>etc<span class="regexp">/redis/</span>redis.conf -p <span class="number">6379</span>:<span class="number">6379</span> --name redis redis redis-server <span class="regexp">/usr/</span>local<span class="regexp">/etc/</span>redis<span class="regexp">/redis.conf</span></div></pre></td></tr></table></figure>
+<p>需要在redis官网下载获取最新的redis.conf放在/usr/local/etc/redis/</p>
+<p>总共有8种策略，以下是redis.conf关于内存淘汰策略的原文介绍</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#</span><span class="bash"> MAXMEMORY POLICY: how Redis will select what to remove when maxmemory</span></div><div class="line"><span class="meta">#</span><span class="bash"> is reached. You can select among five behaviors:</span></div><div class="line"><span class="meta">#</span><span class="bash"></span></div><div class="line"><span class="meta">#</span><span class="bash"> volatile-lru -&gt; Evict using approximated LRU among the keys with an expire set.</span></div><div class="line"><span class="meta">#</span><span class="bash"> allkeys-lru -&gt; Evict any key using approximated LRU.</span></div><div class="line"><span class="meta">#</span><span class="bash"> volatile-lfu -&gt; Evict using approximated LFU among the keys with an expire set.</span></div><div class="line"><span class="meta">#</span><span class="bash"> allkeys-lfu -&gt; Evict any key using approximated LFU.</span></div><div class="line"><span class="meta">#</span><span class="bash"> volatile-random -&gt; Remove a random key among the ones with an expire set.</span></div><div class="line"><span class="meta">#</span><span class="bash"> allkeys-random -&gt; Remove a random key, any key.</span></div><div class="line"><span class="meta">#</span><span class="bash"> volatile-ttl -&gt; Remove the key with the nearest expire time (minor TTL)</span></div><div class="line"><span class="meta">#</span><span class="bash"> noeviction -&gt; Don<span class="string">'t evict anything, just return an error on write operations.</span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string"></span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string"> LRU means Least Recently Used</span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string"> LFU means Least Frequently Used</span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string"></span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string"> Both LRU, LFU and volatile-ttl are implemented using approximated</span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string"> randomized algorithms.</span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string"></span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string"> Note: with any of the above policies, Redis will return an error on write</span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string">       operations, when there are no suitable keys for eviction.</span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string"></span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string">       At the date of writing these commands are: set setnx setex append</span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string">       incr decr rpush lpush rpushx lpushx linsert lset rpoplpush sadd</span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string">       sinter sinterstore sunion sunionstore sdiff sdiffstore zadd zincrby</span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string">       zunionstore zinterstore hset hsetnx hmset hincrby incrby decrby</span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string">       getset mset msetnx exec sort</span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string"></span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string"> The default is:</span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string"></span></span></div><div class="line"><span class="meta">#</span><span class="bash"><span class="string"> maxmemory-policy noeviction</span></span></div></pre></td></tr></table></figure>
+<p>下面对各种策略进行测试</p>
+<p>将redis最大内存调整为1m，修改redis.conf</p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">maxmemory <span class="number">1048576</span></div></pre></td></tr></table></figure>
+<p>修改内存淘汰策略<br><figure class="highlight ebnf"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">maxmemory-policy noeviction</span></div></pre></td></tr></table></figure></p>
+<p>1、noevication，新写入操作报错。</p>
+<p>测试代码</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">@<span class="function">Test</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">noevicationTest</span>(<span class="params"></span>) &#123;</div><div class="line">    <span class="comment">//flush db</span></div><div class="line">    redisTemplate.delete(redisTemplate.keys(<span class="string">"*"</span>));</div><div class="line">    <span class="comment">//1k</span></div><div class="line">    <span class="keyword">byte</span>[] bytes = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];</div><div class="line"></div><div class="line">    <span class="keyword">int</span> i = <span class="number">0</span>;</div><div class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            redisTemplate.opsForValue().<span class="keyword">set</span>(String.valueOf(i), bytes);</div><div class="line">            System.<span class="keyword">out</span>.println(i++);</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在执行到i为145的时候抛出了异常，有点费解，value为1k，key顶多就几b，把redis最大内存改为10m，可以到7000多个，不知道还有什么占用了内存。</p>
+<p>2、volatile-lru，使用LRU算法删除设置了expire的key 注：redis使用的是一种伪LRU算法，应该是出于性能考虑</p>
+<p>LRU（Least recently used，最近最少使用）算法根据数据的历史访问记录来进行淘汰数据，其核心思想是“如果数据最近被访问过，那么将来被访问的几率也更高”。</p>
+<p>测试代码</p>
+<figure class="highlight processing"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">@Test</div><div class="line"><span class="keyword">public</span> <span class="keyword">void</span> volatileTest() &#123;</div><div class="line">    <span class="comment">//flush db</span></div><div class="line">    redisTemplate.delete(redisTemplate.keys(<span class="string">"*"</span>));</div><div class="line">    <span class="comment">//1k</span></div><div class="line">    <span class="built_in">byte</span>[] bytes = <span class="keyword">new</span> <span class="built_in">byte</span>[<span class="number">1024</span>];</div><div class="line"></div><div class="line">    <span class="built_in">int</span> i = <span class="number">0</span>;</div><div class="line">    <span class="keyword">for</span> (; i &lt; <span class="number">100</span>; i++) &#123;</div><div class="line">        redisTemplate.opsForValue().<span class="built_in">set</span>(<span class="keyword">String</span>.valueOf(i), bytes, <span class="number">10</span>, TimeUnit.MINUTES);</div><div class="line">        System.out.<span class="built_in">println</span>(i);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (; i &lt; <span class="number">200</span>; i++) &#123;</div><div class="line">        redisTemplate.opsForValue().<span class="built_in">set</span>(<span class="keyword">String</span>.valueOf(i), bytes);</div><div class="line">        System.out.<span class="built_in">println</span>(i);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>该测试结果是i为前100设置了expire的key被删除了部分，使用volatile-lru重新执行noevicationTest方法，内存不足时也会抛出异常</p>
+<p>3、allkeys-lru，使用LRU算法（最近最少使用）删除key</p>
+<p>测试代码</p>
+<figure class="highlight processing"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">@Test</div><div class="line"><span class="keyword">public</span> <span class="keyword">void</span> allkeysTest() <span class="keyword">throws</span> InterruptedException &#123;</div><div class="line">    <span class="comment">//flush db</span></div><div class="line">    redisTemplate.delete(redisTemplate.keys(<span class="string">"*"</span>));</div><div class="line">    <span class="comment">//1k</span></div><div class="line">    <span class="built_in">byte</span>[] bytes = <span class="keyword">new</span> <span class="built_in">byte</span>[<span class="number">1024</span>];</div><div class="line"></div><div class="line">    <span class="built_in">int</span> i = <span class="number">0</span>;</div><div class="line">    <span class="keyword">for</span> (; i &lt; <span class="number">100</span>; i++) &#123;</div><div class="line">        redisTemplate.opsForValue().<span class="built_in">set</span>(<span class="keyword">String</span>.valueOf(i), bytes);</div><div class="line">        System.out.<span class="built_in">println</span>(i);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    Thread.sleep(<span class="number">1000</span>);</div><div class="line">    <span class="keyword">for</span> (; i &lt; <span class="number">200</span>; i++) &#123;</div><div class="line">        redisTemplate.opsForValue().<span class="built_in">set</span>(<span class="keyword">String</span>.valueOf(i), bytes);</div><div class="line">        System.out.<span class="built_in">println</span>(i);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>i为前100设置了expire的key被删除了部分，去掉sleep的话i为后100的key也被删除部分。</p>
+<p>4、volatile-lfu，使用LFU算法删除设置了expire的key 注：使用的也是一种伪LFU算法</p>
+<p>LFU（Least Frequently Used）算法根据数据的历史访问频率来淘汰数据，其核心思想是“如果数据过去被访问多次，那么将来被访问的频率也更高”。</p>
+<p>执行volatileTest方法</p>
+<p>结果同2</p>
+<p>5、allkeys-lfu，使用LFU算法删除key</p>
+<p>执行allKeysTest方法</p>
+<p>结果同3</p>
+<p>6、volatile-random，随机删除设置了expire的key</p>
+<p>执行volatileTest方法</p>
+<p>i为前100设置了expire的key被随机删除了部分</p>
+<p>7、allkeys-random，随机删除key</p>
+<p>执行allKeysTest</p>
+<p>key被随机删除部分</p>
+<p>8、volatile-ttl，按expire删除key，越早过期的越快删除</p>
+<p>测试代码</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">@Test</div><div class="line"><span class="keyword">public</span> <span class="keyword">void</span> volatileTtlTest() &#123;</div><div class="line">    <span class="comment">//flush db</span></div><div class="line">    redisTemplate.<span class="keyword">delete</span>(redisTemplate.keys(<span class="string">"*"</span>));</div><div class="line">    <span class="comment">//1k</span></div><div class="line">    <span class="keyword">byte</span>[] bytes = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];</div><div class="line"></div><div class="line">    <span class="built_in">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">1000</span>; i++) &#123;</div><div class="line">        redisTemplate.opsForValue().set(<span class="keyword">String</span>.valueOf(i), bytes, i + <span class="number">1</span>, TimeUnit.MINUTES);</div><div class="line">        System.out.<span class="built_in">println</span>(i);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>i为800前的key全部被删除，800后的被删除部分（极少并且基本在850之前），可见越早过期的越快删除也不是一定的，应该是跟lru、lfu一样并不能达到绝对精确的删除，个人觉得也不用绝对精确，根据项目的需要选择策略即可</p>
+<p>写的单元测试只能算是个小demo，并没有特别去模拟LRU、LFU的场景，而且相信redis的测试肯定要比我做的要好得多了，这里就简单的了解学习一下。</p>
+<p>代码地址：<a href="https://github.com/vickze/redis-test" target="_blank" rel="external">https://github.com/vickze/redis-test</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      Docker学习
+    
+    </summary>
+    
+    
+      <category term="Redis" scheme="http://blog.yk95.top/tags/Redis/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Docker学习-搭建ELK环境整合SpringBoot</title>
+    <link href="http://blog.yk95.top/2019/01/31/Docker%E5%AD%A6%E4%B9%A0-%E6%90%AD%E5%BB%BAELK%E7%8E%AF%E5%A2%83%E6%95%B4%E5%90%88SpringBoot/"/>
+    <id>http://blog.yk95.top/2019/01/31/Docker学习-搭建ELK环境整合SpringBoot/</id>
+    <published>2019-01-30T16:00:00.000Z</published>
+    <updated>2019-02-15T07:27:13.901Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="一、前提"><a href="#一、前提" class="headerlink" title="一、前提"></a>一、前提</h2><p>安装有Docker的Centos7虚拟机一台</p>
+<p>了解Docker基本命令</p>
+<h2 id="二、Docker安装部署"><a href="#二、Docker安装部署" class="headerlink" title="二、Docker安装部署"></a>二、Docker安装部署</h2><h3 id="1、自定义网络"><a href="#1、自定义网络" class="headerlink" title="1、自定义网络"></a>1、自定义网络</h3><figure class="highlight ebnf"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">docker network create elk</span></div></pre></td></tr></table></figure>
+<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><h3 id="2、安装启动Elasticsearch"><a href="#2、安装启动Elasticsearch" class="headerlink" title="2、安装启动Elasticsearch"></a>2、安装启动Elasticsearch</h3><figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run -d --name elasticsearch --net elk -p <span class="number">9200</span>:<span class="number">9200</span> -p <span class="number">9300</span>:<span class="number">9300</span> -e <span class="string">"discovery.type=single-node"</span> -v <span class="regexp">/etc/</span><span class="string">timezone:</span><span class="regexp">/etc/</span>timezone -v <span class="regexp">/etc/</span><span class="string">localtime:</span><span class="regexp">/etc/</span>localtime <span class="string">elasticsearch:</span><span class="number">6.5</span><span class="number">.4</span></div></pre></td></tr></table></figure>
+<h3 id="3、安装启动Kinaba"><a href="#3、安装启动Kinaba" class="headerlink" title="3、安装启动Kinaba"></a>3、安装启动Kinaba</h3><figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run -d --name kibana --net elk -p <span class="number">5601</span>:<span class="number">5601</span> -v <span class="regexp">/etc/</span><span class="string">timezone:</span><span class="regexp">/etc/</span>timezone -v <span class="regexp">/etc/</span><span class="string">localtime:</span><span class="regexp">/etc/</span>localtime <span class="string">kibana:</span><span class="number">6.5</span><span class="number">.4</span></div></pre></td></tr></table></figure>
+<h3 id="4、安装启动Logstash"><a href="#4、安装启动Logstash" class="headerlink" title="4、安装启动Logstash"></a>4、安装启动Logstash</h3><p>先下载镜像然后启动容器</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker <span class="keyword">run</span><span class="bash"> <span class="_">-d</span> --name logstash logstash:6.5.4</span></div></pre></td></tr></table></figure>
+<p>复制logstash容器配置文件到主机</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">docker cp <span class="string">logstash:</span><span class="regexp">/usr/</span>share<span class="regexp">/logstash/</span>config <span class="regexp">/usr/</span>share/logstash</div><div class="line"></div><div class="line">docker cp <span class="string">logstash:</span><span class="regexp">/usr/</span>share<span class="regexp">/logstash/</span>pipeline <span class="regexp">/usr/</span>share/logstash</div></pre></td></tr></table></figure>
+<p>停止删除容器</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">docker <span class="built_in">kill</span> logstash</div><div class="line"></div><div class="line">docker rm logstash</div></pre></td></tr></table></figure>
+<p>修改主机/usr/share/logstash/pipeline/logstash.conf文件，如下</p>
+<figure class="highlight puppet"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">input</span> &#123;</div><div class="line">	tcp &#123;</div><div class="line">		<span class="attr">port</span> =&gt; <span class="number">5000</span></div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">## Add your filters / logstash plugins configuration here</span></div><div class="line"></div><div class="line"><span class="keyword">output</span> &#123;</div><div class="line">	elasticsearch &#123;</div><div class="line">		<span class="attr">hosts</span> =&gt; <span class="string">"elasticsearch:9200"</span></div><div class="line">    		<span class="attr">index</span> =&gt; <span class="string">"logstash-%&#123;+YYYY.MM.dd&#125;"</span></div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以先用一下命令启动看能否启动成功，访问主机ip：9600 验证</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run --rm -it --name=logstash --net=elk -p <span class="number">9600</span><span class="symbol">:</span><span class="number">9600</span> -p <span class="number">5000</span><span class="symbol">:</span><span class="number">5000</span> -v /usr/share/logstash/config/<span class="symbol">:/usr/share/logstash/config/</span> -v /usr/share/logstash/pipeline/<span class="symbol">:/usr/share/logstash/pipeline/</span> <span class="symbol">logstash:</span><span class="number">6.5</span>.<span class="number">4</span></div></pre></td></tr></table></figure>
+<p>后台启动</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run -d --name=logstash --net=elk -p <span class="number">9600</span><span class="symbol">:</span><span class="number">9600</span> -p <span class="number">5000</span><span class="symbol">:</span><span class="number">5000</span> -v /usr/share/logstash/config/<span class="symbol">:/usr/share/logstash/config/</span> -v /usr/share/logstash/pipeline/<span class="symbol">:/usr/share/logstash/pipeline/</span> -v /etc/<span class="symbol">timezone:</span>/etc/timezone -v /etc/<span class="symbol">localtime:</span>/etc/localtime <span class="symbol">logstash:</span><span class="number">6.5</span>.<span class="number">4</span></div></pre></td></tr></table></figure>
+<p>主机/usr/share/logstash/config/、/usr/share/logstash/pipeline/文件夹映射到logstash容器/usr/share/logstash/config/、/usr/share/logstash/pipeline/文件夹</p>
+<p>这里还遇到个很坑的问题，linux主机跟docker容器里面的时间都不准，导致logstash收集的日志时间不对</p>
+<p>首先校正Linux主机时间，参考<a href="https://www.cnblogs.com/zhi-leaf/p/6281549.html" target="_blank" rel="external">https://www.cnblogs.com/zhi-leaf/p/6281549.html</a></p>
+<p>同步主机时间到Docker容器，启动加<code>-v /etc/timezone:/etc/timezone -v /etc/localtime:/etc/localtime</code>，参考<a href="https://blog.csdn.net/dounine/article/details/79976778" target="_blank" rel="external">https://blog.csdn.net/dounine/article/details/79976778</a></p>
+<p>也可以选择使用非官方的ELK镜像，直接搭建ELK环境。</p>
+<h2 id="三、SpringBoot、Logstash简单整合"><a href="#三、SpringBoot、Logstash简单整合" class="headerlink" title="三、SpringBoot、Logstash简单整合"></a>三、SpringBoot、Logstash简单整合</h2><p>所谓ELK，就是Elasticsearch存储，Kibana展示，Logstash收集，这里给出一个Springboot输出日志到Logstash的简单配置</p>
+<p>application.yml</p>
+<figure class="highlight less"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">logging</span>:</div><div class="line">  <span class="attribute">config</span>: <span class="attribute">classpath</span>:logback-spring.xml</div></pre></td></tr></table></figure>
+<p>logback-spring.xml</p>
+<figure class="highlight dust"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="xml"><span class="php"><span class="meta">&lt;?</span>xml version=<span class="string">"1.0"</span> encoding=<span class="string">"UTF-8"</span><span class="meta">?&gt;</span></span></span></div><div class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">include</span> <span class="attr">resource</span>=<span class="string">"org/springframework/boot/logging/logback/base.xml"</span>/&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"LOGSTASH_HOST"</span> <span class="attr">value</span>=<span class="string">"$</span></span><span class="template-variable">&#123;LOGSTASH_HOST:-$&#123;DOCKER_HOST:-192.168.244.137&#125;</span><span class="xml"><span class="tag"><span class="string">&#125;"</span>/&gt;</span></span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"LOGSTASH_PORT"</span> <span class="attr">value</span>=<span class="string">"$</span></span><span class="template-variable">&#123;LOGSTASH_PORT:-5000&#125;</span><span class="xml"><span class="tag"><span class="string">"</span>/&gt;</span></span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">appender</span> <span class="attr">name</span>=<span class="string">"LOGSTASH"</span> <span class="attr">class</span>=<span class="string">"net.logstash.logback.appender.LogstashTcpSocketAppender"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">destination</span>&gt;</span>$<span class="template-variable">&#123;LOGSTASH_HOST&#125;</span><span class="xml">:$</span><span class="template-variable">&#123;LOGSTASH_PORT&#125;</span><span class="xml"><span class="tag">&lt;/<span class="name">destination</span>&gt;</span></span></div><div class="line">        <span class="tag">&lt;<span class="name">encoder</span> <span class="attr">charset</span>=<span class="string">"UTF-8"</span> <span class="attr">class</span>=<span class="string">"net.logstash.logback.encoder.LogstashEncoder"</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">customFields</span>&gt;</span><span class="template-variable">&#123;"appname":"myapp"&#125;</span><span class="xml"><span class="tag">&lt;/<span class="name">customFields</span>&gt;</span></span></div><div class="line">        <span class="tag">&lt;/<span class="name">encoder</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">appender</span>&gt;</span></div><div class="line"></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">springProfile</span> <span class="attr">name</span>=<span class="string">"default,dev,test"</span>&gt;</span>&gt;</div><div class="line">        <span class="tag">&lt;<span class="name">logger</span> <span class="attr">name</span>=<span class="string">"io.vickze"</span> <span class="attr">level</span>=<span class="string">"DEBUG"</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">appender-ref</span> <span class="attr">ref</span>=<span class="string">"LOGSTASH"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">logger</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">springProfile</span>&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">springProfile</span> <span class="attr">name</span>=<span class="string">"prod"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">logger</span> <span class="attr">name</span>=<span class="string">"io.vickze"</span> <span class="attr">level</span>=<span class="string">"ERROR"</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">appender-ref</span> <span class="attr">ref</span>=<span class="string">"LOGSTASH"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">logger</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">springProfile</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>具体代码可参考</p>
+<p>本文只写了logstash tcp为input，output为elasticsearch的搭建与应用，logstash本身支持的input、output有几十种，具体可参考</p>
+<p><a href="https://www.elastic.co/guide/en/logstash/current/input-plugins.html" target="_blank" rel="external">https://www.elastic.co/guide/en/logstash/current/input-plugins.html</a></p>
+<p><a href="https://www.elastic.co/guide/en/logstash/current/output-plugins.html" target="_blank" rel="external">https://www.elastic.co/guide/en/logstash/current/output-plugins.html</a></p>
+<h2 id="四、参考"><a href="#四、参考" class="headerlink" title="四、参考"></a>四、参考</h2><p><a href="https://docs.docker.com/samples/library/elasticsearch/" target="_blank" rel="external">https://docs.docker.com/samples/library/elasticsearch/</a></p>
+<p><a href="https://docs.docker.com/samples/library/kibana/" target="_blank" rel="external">https://docs.docker.com/samples/library/kibana/</a></p>
+<p><a href="https://docs.docker.com/samples/library/logstash/" target="_blank" rel="external">https://docs.docker.com/samples/library/logstash/</a></p>
+<p><a href="https://www.elastic.co/guide/en/logstash/current/docker-config.html" target="_blank" rel="external">https://www.elastic.co/guide/en/logstash/current/docker-config.html</a></p>
+<p><a href="https://www.imooc.com/article/48732" target="_blank" rel="external">https://www.imooc.com/article/48732</a></p>
+<p><a href="https://github.com/deviantony/docker-elk/blob/master/logstash/pipeline/logstash.conf" target="_blank" rel="external">https://github.com/deviantony/docker-elk/blob/master/logstash/pipeline/logstash.conf</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      Docker学习
+    
+    </summary>
+    
+    
+      <category term="Docker" scheme="http://blog.yk95.top/tags/Docker/"/>
+    
+      <category term="ELK" scheme="http://blog.yk95.top/tags/ELK/"/>
+    
+      <category term="Elasticsearch" scheme="http://blog.yk95.top/tags/Elasticsearch/"/>
+    
+      <category term="Logstash" scheme="http://blog.yk95.top/tags/Logstash/"/>
+    
+      <category term="Kibana" scheme="http://blog.yk95.top/tags/Kibana/"/>
+    
+      <category term="SpringBoot" scheme="http://blog.yk95.top/tags/SpringBoot/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Docker学习-基础环境搭建</title>
+    <link href="http://blog.yk95.top/2018/09/09/Docker%E5%AD%A6%E4%B9%A0-%E5%9F%BA%E7%A1%80%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/"/>
+    <id>http://blog.yk95.top/2018/09/09/Docker学习-基础环境搭建/</id>
+    <published>2018-09-08T16:00:00.000Z</published>
+    <updated>2018-09-09T08:58:46.853Z</updated>
+    
+    <content type="html"><![CDATA[<p>环境：Linux CentOS7</p>
+<p>参考：</p>
+<p><a href="http://www.runoob.com/docker/docker-tutorial.html" target="_blank" rel="external">Docker菜鸟教程</a></p>
+<p><a href="https://www.cnblogs.com/moxiaoan/p/5683743.html" target="_blank" rel="external">CentOS7使用firewalld打开关闭防火墙与端口</a></p>
+<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><h3 id="yum安装docker"><a href="#yum安装docker" class="headerlink" title="yum安装docker"></a>yum安装docker</h3><p><code>yum -y install docker-io</code></p>
+<p>这里安装完后还遇到个很奇怪的问题，主机ip消失了，原本用工具连着虚拟机的，突然就断了，用<code>ip addr</code>命令看到多了个<code>docker0</code>，原本主机的ip地址没了，最后通过命令<code>service network restart</code>重新启动网络服务就ok了。</p>
+<p>安装完成后启动</p>
+<p><code>service docker start</code></p>
+<h3 id="安装nginx"><a href="#安装nginx" class="headerlink" title="安装nginx"></a>安装nginx</h3><p>拉取nginx镜像</p>
+<p><code>docker pull nginx</code></p>
+<p>启动nginx</p>
+<p><code>docker run -p 80:80 --name nginx  -d nginx</code></p>
+<blockquote>
+<p>命令详细：<a href="http://www.runoob.com/docker/docker-command-manual.html" target="_blank" rel="external">Docker命令大全</a></p>
+</blockquote>
+<p>开启宿主机80端口</p>
+<p><code>firewall-cmd --zone=public --add-port=80/tcp --permanent</code></p>
+<p><code>firewall-cmd --reload</code></p>
+<p>访问宿主机ip可看到nginx启动页</p>
+<h3 id="安装mysql"><a href="#安装mysql" class="headerlink" title="安装mysql"></a>安装mysql</h3><p>拉取mysql镜像</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#mysql8</span></div><div class="line"><span class="attribute">docker</span> pull mysql</div></pre></td></tr></table></figure>
+<p>启动mysql</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker <span class="keyword">run</span><span class="bash"> --name mysql -p 3306:3306 <span class="_">-e</span> MYSQL_ROOT_PASSWORD=123456 <span class="_">-d</span> mysql</span></div></pre></td></tr></table></figure>
+<p>命令说明：</p>
+<ul>
+<li>-e MYSQL_ROOT_PASSWORD=123456：初始化root用户的密码</li>
+</ul>
+<p>因为mysql8的密码认证机制改了，可能我们用的mysql可视化工具并不支持，所以我们需要把mysql的密码认证改回旧版本。</p>
+<p>进入容器</p>
+<p><code>docker exec -it mysql bash</code></p>
+<p>登录mysql</p>
+<p><code>mysql -u root -p</code></p>
+<p>修改</p>
+<p><code>ALTER USER &#39;root&#39;@&#39;%&#39; IDENTIFIED WITH mysql_native_password BY &#39;123456&#39;;</code></p>
+<p>开启宿主机3306端口，使用宿主机ip 3306端口可以连接到mysql。</p>
+<h3 id="安装redis"><a href="#安装redis" class="headerlink" title="安装redis"></a>安装redis</h3><p>拉取redis镜像</p>
+<figure class="highlight ebnf"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">docker pull redis</span></div></pre></td></tr></table></figure>
+<p>启动redis</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker <span class="keyword">run</span><span class="bash"> -p 6379:6379 --name redis  <span class="_">-d</span> redis</span></div></pre></td></tr></table></figure>
+<p>开启宿主机6379端口，使用宿主机ip 6379端口可以连接到redis。</p>
+<h3 id="安装rabbitmq"><a href="#安装rabbitmq" class="headerlink" title="安装rabbitmq"></a>安装rabbitmq</h3><p>拉取镜像</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">#安装<span class="selector-tag">rabbitmq</span><span class="selector-pseudo">:management</span>版本带管理页面</div><div class="line"><span class="selector-tag">docker</span> <span class="selector-tag">pull</span> <span class="selector-tag">rabbitmq</span><span class="selector-pseudo">:management</span></div></pre></td></tr></table></figure>
+<p>启动</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run -d -<span class="selector-tag">p</span> <span class="number">5672</span>:<span class="number">5672</span> -<span class="selector-tag">p</span> <span class="number">15672</span>:<span class="number">15672</span> --name rabbitmq rabbitmq:management</div></pre></td></tr></table></figure>
+<p>开启宿主机5672、15672端口，使用宿主机ip 5672端口连接到rabbitmq，访问宿主机ip 端口15672可以看到rabbitmq管理页面。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      Docker学习
+    
+    </summary>
+    
+    
+      <category term="Docker" scheme="http://blog.yk95.top/tags/Docker/"/>
+    
+      <category term="Nginx" scheme="http://blog.yk95.top/tags/Nginx/"/>
+    
+      <category term="Mysql" scheme="http://blog.yk95.top/tags/Mysql/"/>
+    
+      <category term="Redis" scheme="http://blog.yk95.top/tags/Redis/"/>
+    
+      <category term="Rabbitmq" scheme="http://blog.yk95.top/tags/Rabbitmq/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>成为Java顶尖程序员，先过了下面问题！（答案）</title>
+    <link href="http://blog.yk95.top/2018/01/30/%E6%88%90%E4%B8%BAJava%E9%A1%B6%E5%B0%96%E7%A8%8B%E5%BA%8F%E5%91%98%EF%BC%8C%E5%85%88%E8%BF%87%E4%BA%86%E4%B8%8B%E9%9D%A2%E9%97%AE%E9%A2%98%EF%BC%81%EF%BC%88%E7%AD%94%E6%A1%88%EF%BC%89/"/>
+    <id>http://blog.yk95.top/2018/01/30/成为Java顶尖程序员，先过了下面问题！（答案）/</id>
+    <published>2018-01-29T16:00:00.000Z</published>
+    <updated>2018-05-01T14:25:10.347Z</updated>
+    
+    <content type="html"><![CDATA[<p><a href="https://zhuanlan.zhihu.com/p/31552882" target="_blank" rel="external">成为Java顶尖程序员，先过了下面问题！</a></p>
+<p>答案源自网上收集及自己的一些的见解（有些知识可能理解的不对，持续修改中），部分难题只附上了链接。</p>
+<h1 id="一、数据结构与算法基础"><a href="#一、数据结构与算法基础" class="headerlink" title="一、数据结构与算法基础"></a>一、数据结构与算法基础</h1><h2 id="1、说一下几种常见的排序算法和分别的复杂度。"><a href="#1、说一下几种常见的排序算法和分别的复杂度。" class="headerlink" title="1、说一下几种常见的排序算法和分别的复杂度。"></a>1、说一下几种常见的排序算法和分别的复杂度。</h2><table>
+<thead>
+<tr>
+<th style="text-align:center">排序算法</th>
+<th style="text-align:center">平均时间复杂度</th>
+<th style="text-align:center">最差时间复杂度</th>
+<th style="text-align:center">空间复杂度</th>
+<th style="text-align:center">稳定性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">冒泡排序</td>
+<td style="text-align:center">O(n&sup2;)</td>
+<td style="text-align:center">O(n&sup2;)</td>
+<td style="text-align:center">O(1)</td>
+<td style="text-align:center">稳定</td>
+</tr>
+<tr>
+<td style="text-align:center">选择排序</td>
+<td style="text-align:center">O(n&sup2;)</td>
+<td style="text-align:center">O(n&sup2;)</td>
+<td style="text-align:center">O(1)</td>
+<td style="text-align:center">稳定</td>
+</tr>
+<tr>
+<td style="text-align:center">插入排序</td>
+<td style="text-align:center">O(n&sup2;)</td>
+<td style="text-align:center">O(n&sup2;)</td>
+<td style="text-align:center">O(n&sup2;)</td>
+<td style="text-align:center">稳定</td>
+</tr>
+<tr>
+<td style="text-align:center">快速排序</td>
+<td style="text-align:center">O(n*log<sub>2</sub>n)</td>
+<td style="text-align:center">O(n&sup2;)</td>
+<td style="text-align:center">O(log<sub>2</sub>n)~O(n)</td>
+<td style="text-align:center">不稳定</td>
+</tr>
+</tbody>
+</table>
+<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><h2 id="2、用Java写一个冒泡排序算法"><a href="#2、用Java写一个冒泡排序算法" class="headerlink" title="2、用Java写一个冒泡排序算法"></a>2、用Java写一个冒泡排序算法</h2><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">void</span> <span class="title">bubbleSort</span><span class="params">(<span class="keyword">int</span>[] a)</span> </span>&#123;</div><div class="line">  <span class="keyword">if</span> (a == <span class="keyword">null</span> || a.length &lt; <span class="number">2</span>) &#123;</div><div class="line">    <span class="keyword">return</span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = a.length - <span class="number">1</span>; i &gt; <span class="number">0</span>; i--) &#123;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; i; j++) &#123;</div><div class="line">      <span class="keyword">if</span> (a[j + <span class="number">1</span>] &lt; a[j]) &#123;</div><div class="line">        <span class="keyword">int</span> temp = a[j + <span class="number">1</span>];</div><div class="line">        a[j + <span class="number">1</span>] =  a[j];</div><div class="line">        a[j] = temp;</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="3、描述一下链式存储结构。"><a href="#3、描述一下链式存储结构。" class="headerlink" title="3、描述一下链式存储结构。"></a>3、描述一下链式存储结构。</h2><p>1、比顺序存储结构的存储密度小(链式存储结构中每个结点都由数据域与指针域两部分组成，相比顺序存储结构增加了存储空间)。</p>
+<p>2、逻辑上相邻的节点物理上不必相邻。</p>
+<p>3、插入、删除灵活 (不必移动节点，只要改变节点中的指针)。</p>
+<p>4、查找结点时链式存储要比顺序存储慢。</p>
+<p>5、每个结点是由数据域和指针域组成。</p>
+<p>6、由于簇是随机分配的，这也使数据删除后覆盖几率降低，恢复可能提高。</p>
+<h2 id="4、如何遍历一棵二叉树？"><a href="#4、如何遍历一棵二叉树？" class="headerlink" title="4、如何遍历一棵二叉树？"></a>4、如何遍历一棵二叉树？</h2><figure class="highlight crmsh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line">List<span class="tag">&lt;List&lt;Integer&gt;</span>&gt; print(TreeNode root) &#123;</div><div class="line">  ArrayList<span class="tag">&lt;ArrayList&lt;Integer&gt;</span>&gt; ll = new ArrayList<span class="tag">&lt;&gt;</span>();</div><div class="line">  if (root == null) &#123;</div><div class="line">    return ll;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  ArrayList<span class="tag">&lt;Integer&gt;</span> l = new ArrayList<span class="tag">&lt;Integer&gt;</span>();</div><div class="line"></div><div class="line">  TreeNode p = root;</div><div class="line">  TreeNode last = null;</div><div class="line"></div><div class="line">  LinkedList<span class="tag">&lt;TreeNode&gt;</span> queue = new LinkedList<span class="tag">&lt;TreeNode&gt;</span>();</div><div class="line">  queue.add(root);</div><div class="line"></div><div class="line">  while (!queue.isEmpty()) &#123;</div><div class="line">    TreeNode <span class="keyword">node</span> <span class="title">= queue</span>.poll();</div><div class="line">    l.add(<span class="keyword">node</span>.<span class="title">val</span>);</div><div class="line"></div><div class="line">    if (<span class="keyword">node</span>.<span class="title">left</span> != null) &#123;</div><div class="line">      last = <span class="keyword">node</span>.<span class="title">left</span>;</div><div class="line">      queue.add(<span class="keyword">node</span>.<span class="title">left</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    if (<span class="keyword">node</span>.<span class="title">right</span> != null) &#123;</div><div class="line">      last = <span class="keyword">node</span>.<span class="title">right</span>;</div><div class="line">      queue.add(<span class="keyword">node</span>.<span class="title">right</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    if (p == <span class="keyword">node</span><span class="title">) &#123;</span></div><div class="line">      p = last;</div><div class="line">      ll.add(l);</div><div class="line">      l = new ArrayList<span class="tag">&lt;&gt;</span>();</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  return ll;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="5、倒排一个LinkedList"><a href="#5、倒排一个LinkedList" class="headerlink" title="5、倒排一个LinkedList"></a>5、倒排一个LinkedList</h2><figure class="highlight abnf"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Collections.reverse(linkedList)<span class="comment">;</span></div></pre></td></tr></table></figure>
+<p>倒序链表可以借助Stack类或者使用递归</p>
+<figure class="highlight lasso"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> ArrayList&lt;<span class="built_in">Integer</span>&gt; printListFromTailToHead(ListNode listNode) &#123;</div><div class="line">    <span class="built_in">Stack</span>&lt;<span class="built_in">Integer</span>&gt; <span class="built_in">stack</span> = <span class="literal">new</span> <span class="built_in">Stack</span>&lt;<span class="built_in">Integer</span>&gt;();</div><div class="line">    <span class="keyword">while</span> (listNode != <span class="built_in">null</span>) &#123;</div><div class="line">        <span class="built_in">stack</span>.push(listNode.val);</div><div class="line">        listNode = listNode.next;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    ArrayList&lt;<span class="built_in">Integer</span>&gt; <span class="built_in">list</span> = <span class="literal">new</span> ArrayList&lt;<span class="built_in">Integer</span>&gt;();</div><div class="line">    <span class="keyword">while</span> (!<span class="built_in">stack</span>.isEmpty()) &#123;</div><div class="line">        <span class="built_in">list</span>.add(<span class="built_in">stack</span>.pop());</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">return</span> <span class="built_in">list</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line"><span class="keyword">public</span> ArrayList&lt;<span class="built_in">Integer</span>&gt; printListFromTailToHead(ListNode listNode) &#123;</div><div class="line">    ArrayList&lt;<span class="built_in">Integer</span>&gt; <span class="built_in">list</span> = <span class="literal">new</span> ArrayList&lt;<span class="built_in">Integer</span>&gt;();</div><div class="line"></div><div class="line">    ListNode pNode = listNode;</div><div class="line">    <span class="keyword">if</span> (pNode != <span class="built_in">null</span>) &#123;</div><div class="line">        <span class="keyword">if</span> (pNode.next != <span class="built_in">null</span>) &#123;</div><div class="line">            <span class="built_in">list</span> = printListFromTailToHead(pNode.next);</div><div class="line">        &#125;</div><div class="line">        <span class="built_in">list</span>.add(pNode.val);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">return</span> <span class="built_in">list</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="6、用Java写一个递归遍历目录下面的所有文件。"><a href="#6、用Java写一个递归遍历目录下面的所有文件。" class="headerlink" title="6、用Java写一个递归遍历目录下面的所有文件。"></a>6、用Java写一个递归遍历目录下面的所有文件。</h2><figure class="highlight gradle"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">void</span> listAll(<span class="keyword">File</span> directory) &#123;</div><div class="line">    <span class="keyword">if</span> (!(directory.exists() &amp;&amp; directory.isDirectory())) &#123;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"目录不存在"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">File</span>[] files = directory.listFiles();</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">File</span> <span class="keyword">file</span> : files) &#123;</div><div class="line">        System.out.<span class="keyword">println</span>(<span class="keyword">file</span>.getPath() + <span class="keyword">file</span>.getName());</div><div class="line">        <span class="keyword">if</span> (<span class="keyword">file</span>.isDirectory()) &#123;</div><div class="line">            listAll(<span class="keyword">file</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h1 id="二、Java基础"><a href="#二、Java基础" class="headerlink" title="二、Java基础"></a>二、Java基础</h1><h2 id="1、接口与抽象类的区别？"><a href="#1、接口与抽象类的区别？" class="headerlink" title="1、接口与抽象类的区别？"></a>1、接口与抽象类的区别？</h2><p>类可以实现多个接口但只能继承一个抽象类</p>
+<p>接口里面所有的方法都是Public的，抽象类允许Private、Protected方法</p>
+<p>JDK8前接口里面所有的方法都是抽象的且不允许有静态方法，抽象类可以有普通、静态方法，JDK8 接口可以实现默认方法和静态方法，前面加default、static关键字</p>
+<h2 id="2、Java中的异常有哪几类？分别怎么使用？"><a href="#2、Java中的异常有哪几类？分别怎么使用？" class="headerlink" title="2、Java中的异常有哪几类？分别怎么使用？"></a>2、Java中的异常有哪几类？分别怎么使用？</h2><p>分为错误和异常，异常又包括运行时异常、非运行时异常</p>
+<p>错误，如StackOverflowError、OutOfMemoryError</p>
+<p>运行时异常，如NullPointerException、IndexOutOfBoundsException，都是RuntimeException及其子类</p>
+<p>非运行时异常，如IOException、SQLException,都是Exception及其子类，这些异常是一定需要try catch捕获的</p>
+<h2 id="3、常用的集合类有哪些？比如List如何排序？"><a href="#3、常用的集合类有哪些？比如List如何排序？" class="headerlink" title="3、常用的集合类有哪些？比如List如何排序？"></a>3、常用的集合类有哪些？比如List如何排序？</h2><p>主要分为三类，Map、Set、List</p>
+<p>Map: HashMap、LinkedHashMap、TreeMap</p>
+<p>Set：HashSet、LinkedHashSet、TreeSet</p>
+<p>List: ArrayList、LinkedList</p>
+<figure class="highlight sqf"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Collections.<span class="built_in">sort</span>(<span class="built_in">list</span>);</div></pre></td></tr></table></figure>
+<h2 id="4、ArrayList和LinkedList内部的实现大致是怎样的？他们之间的区别和优缺点？"><a href="#4、ArrayList和LinkedList内部的实现大致是怎样的？他们之间的区别和优缺点？" class="headerlink" title="4、ArrayList和LinkedList内部的实现大致是怎样的？他们之间的区别和优缺点？"></a>4、ArrayList和LinkedList内部的实现大致是怎样的？他们之间的区别和优缺点？</h2><p>ArrayList：内部使用数组的形式实现了存储，利用数组的下标进行元素的访问，因此对元素的随机访问速度非常快。<br>因为是数组，所以ArrayList在初始化的时候，有初始大小10，插入新元素的时候，会判断是否需要扩容，扩容的步长是0.5倍原容量，扩容方式是利用数组的复制，因此有一定的开销。</p>
+<p>LinkedList：内部使用双向链表的结构实现存储，LinkedList有一个内部类作为存放元素的单元，里面有三个属性，用来存放元素本身以及前后2个单元的引用，另外LinkedList内部还有一个header属性，用来标识起始位置，LinkedList的第一个单元和最后一个单元都会指向header，因此形成了一个双向的链表结构。</p>
+<p>ArrayList查找较快，插入、删除较慢，LinkedList查找较慢，插入、删除较快。</p>
+<h2 id="5、内存溢出是怎么回事？请举一个例子？"><a href="#5、内存溢出是怎么回事？请举一个例子？" class="headerlink" title="5、内存溢出是怎么回事？请举一个例子？"></a>5、内存溢出是怎么回事？请举一个例子？</h2><p>内存溢出 out of memory，是指程序在申请内存时，没有足够的内存空间供其使用，出现out of memory。</p>
+<p>内存泄漏 memory leak，是指程序在申请内存后，无法释放已申请的内存空间，一次内存泄漏危害可以忽略，但内存泄漏堆积后果很严重，无论多少内存,迟早会被占光。</p>
+<figure class="highlight qml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">List&lt;<span class="built_in">Object</span>&gt; <span class="built_in">list</span> = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line"><span class="keyword">while</span> (<span class="literal">true</span>) &#123;</div><div class="line">  <span class="built_in">list</span>.add(<span class="keyword">new</span> <span class="built_in">Object</span>());</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>内存溢出可能的原因:</p>
+<p>1、程序中存在死循环</p>
+<p>2、静态变量和静态方法太多了</p>
+<p>3、内存泄漏，比如说一个静态的list，一直往里放值，又因为静态变量不会被释放，所以迟早是要内存溢出的</p>
+<p>4、大对象过多，java中的大对象是直接进入老年代的，然后当多个大对象同时工作时造成程序的可用内存非常小，比如我list中原本最多可以放1000个对象，因为可用内存太小，放了500个就放不下了。</p>
+<p>5、还有一种很常见的情况，在把一个很大的程序直接导入，直接就内存溢出了，原因就是内存相对这个程序就是太小了，需要手动增加内存。</p>
+<h2 id="6、-和equals的区别？"><a href="#6、-和equals的区别？" class="headerlink" title="6、==和equals的区别？"></a>6、==和equals的区别？</h2><p>==是运算符，而equals是Object的基本方法，==用于基本类型的数据的比较，或者是比较两个对象的引用是否相同，equals用于比较两个对象的值是否相等，例如字符串的比较</p>
+<h2 id="7、hashCode方法的作用？"><a href="#7、hashCode方法的作用？" class="headerlink" title="7、hashCode方法的作用？"></a>7、hashCode方法的作用？</h2><p>1、hashCode的存在主要是用于查找的快捷性，为了配合基于散列的集合正常运行，如Hashtable，HashMap等，hashCode是用来在散列存储结构中确定对象的存储地址的；</p>
+<p>2、如果两个对象相同，就是适用于equals(java.lang.Object) 方法，那么这两个对象的hashCode一定要相同；</p>
+<p>3、如果对象的equals方法被重写，那么对象的hashCode也尽量重写，并且产生hashCode使用的对象，一定要和equals方法中使用的一致，否则就会违反上面提到的第2点；</p>
+<p>4、两个对象的hashCode相同，并不一定表示两个对象就相同，也就是不一定适用于equals(java.lang.Object) 方法，只能够说明这两个对象在散列存储结构中，它们存放在同一个桶里面</p>
+<h2 id="8、NIO是什么？适用于何种场景？"><a href="#8、NIO是什么？适用于何种场景？" class="headerlink" title="8、NIO是什么？适用于何种场景？"></a>8、NIO是什么？适用于何种场景？</h2><p>NIO是为了弥补IO操作的不足而诞生的，NIO的一些新特性有：非阻塞I/O，选择器，缓冲以及管道。管道（Channel），缓冲（Buffer） ，选择器（ Selector）是其主要特征。</p>
+<p>如果需要管理同时打开的成千上万个连接，这些连接每次只是发送少量的数据，例如聊天服务器，这时候用NIO处理数据可能是个很好的选择。</p>
+<p>而如果只有少量的连接，而这些连接每次要发送大量的数据，这时候传统的IO更合适。使用哪种处理数据，需要在数据的响应等待时间和检查缓冲区数据的时间上作比较来权衡选择。</p>
+<p><a href="http://www.php.cn/java-article-361228.html" target="_blank" rel="external">Java中NIO和IO区别和适用场景</a></p>
+<h2 id="9、HashMap实现原理，如何保证HashMap的线程安全？"><a href="#9、HashMap实现原理，如何保证HashMap的线程安全？" class="headerlink" title="9、HashMap实现原理，如何保证HashMap的线程安全？"></a>9、HashMap实现原理，如何保证HashMap的线程安全？</h2><p><img src="/static/img/hashMap put方法执行流程图.png" alt=""></p>
+<p><a href="https://www.cnblogs.com/jzb-blog/p/6637823.html" target="_blank" rel="external">java 8 Hashmap深入解析 —— put get 方法源码</a></p>
+<p>HashMap是基于哈希表（链地址法）实现的，在JDK8中，当数组中链表长度大于8会转为红黑树。</p>
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Collections.synchronizedMap(map)<span class="comment">;</span></div></pre></td></tr></table></figure>
+<h2 id="10、JVM内存结构，为什么需要GC？"><a href="#10、JVM内存结构，为什么需要GC？" class="headerlink" title="10、JVM内存结构，为什么需要GC？"></a>10、JVM内存结构，为什么需要GC？</h2><p><img src="/static/img/JVM.png" alt=""></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">名称</th>
+<th style="text-align:center">特征</th>
+<th style="text-align:center">作用</th>
+<th style="text-align:center">配置参数</th>
+<th style="text-align:center">异常</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">程序计数器</td>
+<td style="text-align:center">占用内存小，线程私有，生命周期与线程相同</td>
+<td style="text-align:center">大致为字节码行号指示器</td>
+<td style="text-align:center">无</td>
+<td style="text-align:center">无</td>
+</tr>
+<tr>
+<td style="text-align:center">虚拟机栈</td>
+<td style="text-align:center">线程私有，生命周期与线程相同，使用连续的内存空间</td>
+<td style="text-align:center">Java方法执行的内存模型，存储局部变量表、操作栈、动态链接、方法出口等信息</td>
+<td style="text-align:center">-Xss</td>
+<td style="text-align:center">StackOverflowError OutOfMemoryError</td>
+</tr>
+<tr>
+<td style="text-align:center">堆</td>
+<td style="text-align:center">线程共享，生命周期与虚拟机相同，可以不使用连续的内存地址</td>
+<td style="text-align:center">保存对象实例，所有对象（包括数组）都要在堆上分配</td>
+<td style="text-align:center">-Xms -Xmx -Xmn</td>
+<td style="text-align:center">OutOfMemoryError</td>
+</tr>
+<tr>
+<td style="text-align:center">方法区</td>
+<td style="text-align:center">线程共享，生命周期与虚拟机相同，可以不使用连续的内存地址</td>
+<td style="text-align:center">存储已被虚拟机加载的类信息、常量、静态变量、即时编译器后的代码等数据</td>
+<td style="text-align:center">-XX:PermSize:16M -XX:MaxPermSize:64M</td>
+<td style="text-align:center">OutOfMemoryError</td>
+</tr>
+<tr>
+<td style="text-align:center">运行时常量池</td>
+<td style="text-align:center">方法区的一部分，具有动态性</td>
+<td style="text-align:center">存放字面量及符号引用</td>
+<td style="text-align:center">无</td>
+<td style="text-align:center">无</td>
+</tr>
+</tbody>
+</table>
+<p>垃圾回收可以有效的防止内存泄漏，有效的使用可以使用的内存。垃圾回收器通常是作为一个单独的低优先级的线程运行，不可预知的情况下对内存堆中已经死亡的或者长时间没有使用的对象进行清除和回收，程序员不能实时的调用垃圾回收器对某个对象或所有对象进行垃圾回收。回收机制有分代复制垃圾回收、标记垃圾回收、增量垃圾回收等方式。</p>
+<h2 id="11、NIO模型，select-epoll的区别，多路复用的原理"><a href="#11、NIO模型，select-epoll的区别，多路复用的原理" class="headerlink" title="11、NIO模型，select/epoll的区别，多路复用的原理"></a>11、NIO模型，select/epoll的区别，多路复用的原理</h2><p>select，poll，epoll都是IO多路复用的机制。I/O多路复用就通过一种机制，可以监视多个描述符，一旦某个描述符就绪（一般是读就绪或者写就绪），能够通知程序进行相应的读写操作。但select，poll，epoll本质上都是同步I/O，因为他们都需要在读写事件就绪后自己负责进行读写，也就是说这个读写过程是阻塞的，而异步I/O则无需自己负责进行读写，异步I/O的实现会负责把数据从内核拷贝到用户空间。</p>
+<p>（1）select，poll实现需要自己不断轮询所有fd集合，直到设备就绪，期间可能要睡眠和唤醒多次交替。而epoll其实也需要调用epoll_wait不断轮询就绪链表，期间也可能多次睡眠和唤醒交替，但是它是设备就绪时，调用回调函数，把就绪fd放入就绪链表中，并唤醒在epoll_wait中进入睡眠的进程。虽然都要睡眠和交替，但是select和poll在“醒着”的时候要遍历整个fd集合，而epoll在“醒着”的时候只要判断一下就绪链表是否为空就行了，这节省了大量的CPU时间。这就是回调机制带来的性能提升。</p>
+<p>（2）select，poll每次调用都要把fd集合从用户态往内核态拷贝一次，并且要把current往设备等待队列中挂一次，而epoll只要一次拷贝，而且把current往等待队列上挂也只挂一次（在epoll_wait的开始，注意这里的等待队列并不是设备等待队列，只是一个epoll内部定义的等待队列）。这也能节省不少的开销。</p>
+<p><a href="http://www.cnblogs.com/Anker/p/3265058.html" target="_blank" rel="external">select、poll、epoll之间的区别总结[整理]</a></p>
+<h2 id="12、Java中一个字符占多少个字节，扩展再问int-long-double占多少字节"><a href="#12、Java中一个字符占多少个字节，扩展再问int-long-double占多少字节" class="headerlink" title="12、Java中一个字符占多少个字节，扩展再问int, long, double占多少字节"></a>12、Java中一个字符占多少个字节，扩展再问int, long, double占多少字节</h2><p>1字节： byte , boolean</p>
+<p>2字节： short , char</p>
+<p>4字节： int , float</p>
+<p>8字节： long , double</p>
+<h2 id="13、创建一个类的实例都有哪些办法？"><a href="#13、创建一个类的实例都有哪些办法？" class="headerlink" title="13、创建一个类的实例都有哪些办法？"></a>13、创建一个类的实例都有哪些办法？</h2><figure class="highlight ebnf"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="attribute">Object o</span> = new Object();</div><div class="line"></div><div class="line"><span class="attribute">Object o</span> = oo.clone();</div><div class="line"></div><div class="line"><span class="attribute">Object o</span> = Class.forName(<span class="string">"xxx"</span>).newInstance();</div></pre></td></tr></table></figure>
+<h2 id="14、final-finally-finalize的区别？"><a href="#14、final-finally-finalize的区别？" class="headerlink" title="14、final/finally/finalize的区别？"></a>14、final/finally/finalize的区别？</h2><p>final是定义类、方法、字段的修饰符，表示类不可被继承，方法不能被重写，字段值不能被修改</p>
+<p>finally是异常处理机制的关键字，表示最后执行</p>
+<p>finalize是Object的一个方法，在对象被虚拟机回收时会判断是否执行该方法，当对象没有覆盖finalize方法，或者finalize方法已经被虚拟机调用过，虚拟机将这两种情况都视为“没有必要执行”</p>
+<h2 id="15、Session-Cookie的区别？"><a href="#15、Session-Cookie的区别？" class="headerlink" title="15、Session/Cookie的区别？"></a>15、Session/Cookie的区别？</h2><p>Session存储在服务器端，类型可以是任意的Java对象，Cookie存储在客户端，类型只能为字符串</p>
+<h2 id="16、String-StringBuffer-StringBuilder的区别，扩展再问他们的实现？"><a href="#16、String-StringBuffer-StringBuilder的区别，扩展再问他们的实现？" class="headerlink" title="16、String/StringBuffer/StringBuilder的区别，扩展再问他们的实现？"></a>16、String/StringBuffer/StringBuilder的区别，扩展再问他们的实现？</h2><p>String、StringBuffer是线程安全的，StringBuilder不是</p>
+<p>String不继承任何类，StringBuffer、StringBuilder继承自AbstractStringBuilder</p>
+<h2 id="17、Servlet的生命周期？"><a href="#17、Servlet的生命周期？" class="headerlink" title="17、Servlet的生命周期？"></a>17、Servlet的生命周期？</h2><p>Servlet生命周期分为三个阶段：</p>
+<p>　　1、初始化阶段  调用init()方法</p>
+<p>　　2、响应客户请求阶段　　调用service()方法</p>
+<p>　　3、终止阶段　　调用destroy()方法</p>
+<p>Servlet初始化阶段：</p>
+<p>　　在下列时刻Servlet容器装载Servlet：</p>
+<p>　　　　1、Servlet容器启动时自动装载某些Servlet，实现它只需要在web.XML文件中的<servlet></servlet>之间添加如下代码：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">loadon-startup</span>&gt;</span>1<span class="tag">&lt;/<span class="name">loadon-startup</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>　　　　2、在Servlet容器启动后，客户首次向Servlet发送请求</p>
+<p>　　　　3、Servlet类文件被更新后，重新装载Servlet</p>
+<p>　　Servlet被装载后，Servlet容器创建一个Servlet实例并且调用Servlet的init()方法进行初始化。在Servlet的整个生命周期内，init()方法只被调用一次。</p>
+<h2 id="18、如何用Java分配一段连续的1G的内存空间？需要注意些什么？"><a href="#18、如何用Java分配一段连续的1G的内存空间？需要注意些什么？" class="headerlink" title="18、如何用Java分配一段连续的1G的内存空间？需要注意些什么？"></a>18、如何用Java分配一段连续的1G的内存空间？需要注意些什么？</h2><figure class="highlight lsl"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ByteBuffer.allocateDirect(<span class="number">1024</span>*<span class="number">1024</span>*<span class="number">1024</span>);</div></pre></td></tr></table></figure>
+<p>要注意内存溢出的问题</p>
+<h2 id="19、Java有自己的内存回收机制，但为什么还存在内存泄漏的问题呢？"><a href="#19、Java有自己的内存回收机制，但为什么还存在内存泄漏的问题呢？" class="headerlink" title="19、Java有自己的内存回收机制，但为什么还存在内存泄漏的问题呢？"></a>19、Java有自己的内存回收机制，但为什么还存在内存泄漏的问题呢？</h2><p>首先内存泄漏 memory leak，是指程序在申请内存后，无法释放已申请的内存空间，一次内存泄漏危害可以忽略，但内存泄漏堆积后果很严重，无论多少内存,迟早会被占光。</p>
+<p>比如下面这段代码，list持有o的引用，o暂时是无法被JVM垃圾回收的，只有当list被垃圾回收或者o从对象list删除掉后，o才能被JVM垃圾回收。</p>
+<figure class="highlight qml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">List&lt;<span class="built_in">Object</span>&gt; <span class="built_in">list</span> = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line"><span class="built_in">Object</span> o = <span class="keyword">new</span> <span class="built_in">Object</span>();</div><div class="line"><span class="built_in">list</span>.add(o);</div><div class="line">o = <span class="literal">null</span>;</div></pre></td></tr></table></figure>
+<h2 id="20、什么是java序列化，如何实现java序列化-写一个实例-？"><a href="#20、什么是java序列化，如何实现java序列化-写一个实例-？" class="headerlink" title="20、什么是java序列化，如何实现java序列化?(写一个实例)？"></a>20、什么是java序列化，如何实现java序列化?(写一个实例)？</h2><p>Java序列化就是把对象扁平化成一组数据，通过这组数据可以反序列化回Java对象。</p>
+<p>例：序列化二叉树</p>
+<figure class="highlight processing"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="built_in">int</span> index = <span class="number">-1</span>;</div><div class="line"></div><div class="line"><span class="keyword">String</span> Serialize(TreeNode root) &#123;</div><div class="line">    StringBuilder sb = <span class="keyword">new</span> StringBuilder();</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (root == <span class="keyword">null</span>) &#123;</div><div class="line">        sb.<span class="built_in">append</span>(<span class="string">"#,"</span>);</div><div class="line">        <span class="keyword">return</span> sb.toString();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    sb.<span class="built_in">append</span>(root.val + <span class="string">","</span>);</div><div class="line">    sb.<span class="built_in">append</span>(Serialize(root.left));</div><div class="line">    sb.<span class="built_in">append</span>(Serialize(root.right));</div><div class="line"></div><div class="line">    <span class="keyword">return</span> sb.toString();</div><div class="line">&#125;</div><div class="line"></div><div class="line">TreeNode Deserialize(<span class="keyword">String</span> <span class="built_in">str</span>) &#123;</div><div class="line">    index++;</div><div class="line"></div><div class="line">    <span class="keyword">String</span>[] strs = <span class="built_in">str</span>.<span class="built_in">split</span>(<span class="string">","</span>);</div><div class="line">    <span class="keyword">if</span> (index &gt; strs.length || strs[index].equals(<span class="string">"#"</span>)) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    TreeNode root = <span class="keyword">new</span> TreeNode(Integer.parseInt(strs[index]));</div><div class="line">    root.left = Deserialize(<span class="built_in">str</span>);</div><div class="line">    root.right = Deserialize(<span class="built_in">str</span>);</div><div class="line"></div><div class="line">    <span class="keyword">return</span> root;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="21、String-s-new-String-“abc”-创建了几个-String-Object"><a href="#21、String-s-new-String-“abc”-创建了几个-String-Object" class="headerlink" title="21、String s = new String(“abc”);创建了几个 String Object?"></a>21、String s = new String(“abc”);创建了几个 String Object?</h2><p>2个，会创建String对象存放在字符串常量池跟堆中。</p>
+<h1 id="三、JVM"><a href="#三、JVM" class="headerlink" title="三、JVM"></a>三、JVM</h1><h2 id="1、JVM堆的基本结构。"><a href="#1、JVM堆的基本结构。" class="headerlink" title="1、JVM堆的基本结构。"></a>1、JVM堆的基本结构。</h2><p>在JVM中堆空间划分如下图所示</p>
+<p><img src="/static/img/JVM堆.png" alt=""></p>
+<p>上图中，刻画了Java程序运行时的堆空间,可以简述成如下2条</p>
+<p>1、JVM中堆空间可以分成三个大区，新生代、老年代、永久代</p>
+<p>2、新生代可以划分为三个区，Eden区，两个Survivor区，在HotSpot虚拟机Eden和Survivor的大小比例为8:1</p>
+<h2 id="2、JVM的垃圾算法有哪几种？CMS垃圾回收的基本流程？"><a href="#2、JVM的垃圾算法有哪几种？CMS垃圾回收的基本流程？" class="headerlink" title="2、JVM的垃圾算法有哪几种？CMS垃圾回收的基本流程？"></a>2、JVM的垃圾算法有哪几种？CMS垃圾回收的基本流程？</h2><p>四种：标记-清除算法、复制算法、标记-整理算法、分代收集算法</p>
+<p>垃圾收集器有七种：Serial、ParNew、Parallel Scavenge、CMS、Serial Old、Parrallel Old、G1</p>
+<p>CMS全称为Concurrent Mark Sweep，是一款并发、使用标记-清除算法的gc收集器。</p>
+<p>总体来说CMS的执行过程可以分为以下几个阶段：<br>初始标记 -&gt; 并发标记 -&gt; 重新标记 -&gt; 并发清理 -&gt; 重置</p>
+<h2 id="3、JVM有哪些常用启动参数可以调整，描述几个？"><a href="#3、JVM有哪些常用启动参数可以调整，描述几个？" class="headerlink" title="3、JVM有哪些常用启动参数可以调整，描述几个？"></a>3、JVM有哪些常用启动参数可以调整，描述几个？</h2><p><a href="https://www.cnblogs.com/w-wfy/p/6415856.html" target="_blank" rel="external">java–jvm启动的参数</a></p>
+<p><a href="https://www.cnblogs.com/emberd/p/5973516.html" target="_blank" rel="external">Java启动参数及调优</a></p>
+<p>java启动参数共分为三类；</p>
+<p>其一是标准参数（-），所有的JVM实现都必须实现这些参数的功能，而且向后兼容；<br>其二是非标准参数（-X），默认jvm实现这些参数的功能，但是并不保证所有jvm实现都满足，且不保证向后兼容；<br>其三是非Stable参数（-XX），此类参数各个jvm实现会有所不同，将来可能会随时取消，需要慎重使用；</p>
+<p>一、标准参数</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">参数</th>
+<th style="text-align:center">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">-client</td>
+<td style="text-align:center">设置jvm使用client模式，特点是启动速度比较快，但运行时性能和内存管理效率不高，通常用于客户端应用程序或者PC应用开发和调试。</td>
+</tr>
+<tr>
+<td style="text-align:center">-server</td>
+<td style="text-align:center">设置jvm使server模式，特点是启动速度比较慢，但运行时性能和内存管理效率很高，适用于生产环境。在具有64位能力的jdk环境下将默认启用该模式，而忽略-client参数。</td>
+</tr>
+<tr>
+<td style="text-align:center">-jar</td>
+<td style="text-align:center">指定以jar包的形式执行一个应用程序。要这样执行一个应用程序，必须让jar包的manifest文件中声明初始加载的Main-class，当然那Main-class必须有public static void main(String[] args)方法。</td>
+</tr>
+<tr>
+<td style="text-align:center">-agentlib:libname [=options]</td>
+<td style="text-align:center">用于装载本地lib包；其中 libname为本地代理库文件名，默认搜索路径为环境变量PATH中的路径，options为传给本地库启动时的参数，多个参数之间用逗号分隔。在 Windows平台上jvm搜索本地库名为libname.dll的文件，在linux上jvm搜索本地库名为libname.so的文件，搜索路径环境变量在不同系统上有所不同，比如Solaries上就默认搜索LD_LIBRARY_PATH。比如：-agentlib:hprof用来获取jvm的运行情况，包括CPU、内存、线程等的运行数据，并可输出到指定文件中；windows中搜索路径为JRE_HOME/bin/hprof.dll。</td>
+</tr>
+<tr>
+<td style="text-align:center">-agentpath:pathname [=options]</td>
+<td style="text-align:center">按全路径装载本地库，不再搜索PATH中的路径；其他功能和agentlib相同；更多的信息待续，在后续的JVMTI部分会详述。</td>
+</tr>
+<tr>
+<td style="text-align:center">-javaagent:jarpath [=options]</td>
+<td style="text-align:center">指定jvm启动时装入java语言设备代理。Jarpath 文件中的mainfest文件必须有Agent-Class属性。代理类也必须实现公共的静态public static void premain(String agentArgs, Instrumentation inst)方法（和main方法类似）。当jvm初始化时，将按代理类的说明顺序调用premain方法；具体参见 java.lang.instrument软件包的描述。</td>
+</tr>
+<tr>
+<td style="text-align:center">-classpath classpath或-cp classpath</td>
+<td style="text-align:center">告知jvm搜索目录名、jar文档名、zip文档名，之间用分号;分隔；使用-classpath后jvm将不再使用CLASSPATH中的类搜索路径，如果-classpath和CLASSPATH都没有设置，则jvm使用当前路径(.)作为类搜索路径。jvm搜索类的方式和顺序为：Bootstrap，Extension，User。Bootstrap中的路径是jvm自带的jar或zip文件，jvm首先搜索这些包文件，用System.getProperty(“sun.boot.class.path”)可得到搜索路径。Extension是位于JRE_HOME/lib/ext目录下的jar文件，jvm在搜索完Bootstrap后就搜索该目录下的jar文件，用System.getProperty(“java.ext.dirs”)可得到搜索路径。User搜索顺序为当前路径.、CLASSPATH、-classpath，jvm最后搜索这些目录，用System.getProperty(“java.class.path”)可得到搜索路径。</td>
+</tr>
+<tr>
+<td style="text-align:center">-Dproperty=value</td>
+<td style="text-align:center">设置系统属性名/值对，运行在此jvm之上的应用程序可用System.getProperty(“property”)得到value的值。如果value中有空格，则需要用双引号将该值括起来，如-Dname=”space string”。该参数通常用于设置系统级全局变量值，如配置文件路径，以便该属性在程序中任何地方都可访问。</td>
+</tr>
+<tr>
+<td style="text-align:center">-verbose -verbose:class</td>
+<td style="text-align:center">输出jvm载入类的相关信息，当jvm报告说找不到类或者类冲突时可此进行诊断。</td>
+</tr>
+<tr>
+<td style="text-align:center">-verbose:gc</td>
+<td style="text-align:center">输出每次GC的相关情况。</td>
+</tr>
+<tr>
+<td style="text-align:center">-verbose:jni</td>
+<td style="text-align:center">输出native方法调用的相关情况，一般用于诊断jni调用错误信息。</td>
+</tr>
+<tr>
+<td style="text-align:center">-version</td>
+<td style="text-align:center">输出java的版本信息，比如jdk版本、vendor、model。</td>
+</tr>
+</tbody>
+</table>
+<p>二、非标准参数</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">参数</th>
+<th style="text-align:center">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">-Xms(n)</td>
+<td style="text-align:center">指定jvm堆的初始大小，默认为物理内存的1/64，最小为1M；可以指定单位，比如k、m，若不指定，则默认为字节。</td>
+</tr>
+<tr>
+<td style="text-align:center">-Xmx(n)</td>
+<td style="text-align:center">指定jvm堆的最大值，默认为物理内存的1/4或者1G，最小为2M；单位与-Xms一致。</td>
+</tr>
+<tr>
+<td style="text-align:center">-Xmn(n)</td>
+<td style="text-align:center">指定jvm堆中年轻代的大小</td>
+</tr>
+<tr>
+<td style="text-align:center">-Xss(n)</td>
+<td style="text-align:center">设置单个线程栈的大小，一般默认为512k。</td>
+</tr>
+<tr>
+<td style="text-align:center">-Xint</td>
+<td style="text-align:center">设置jvm以解释模式运行，所有的字节码将被直接执行，而不会编译成本地码。</td>
+</tr>
+<tr>
+<td style="text-align:center">-Xbatch</td>
+<td style="text-align:center">关闭后台代码编译，强制在前台编译，编译完成之后才能进行代码执行；默认情况下，jvm在后台进行编译，若没有编译完成，则前台运行代码时以解释模式运行。</td>
+</tr>
+<tr>
+<td style="text-align:center">-Xbootclasspath:bootclasspath</td>
+<td style="text-align:center">让jvm从指定路径（可以是分号分隔的目录、jar、或者zip）中加载bootclass，用来替换jdk的rt.jar；若非必要，一般不会用到；</td>
+</tr>
+<tr>
+<td style="text-align:center">-Xbootclasspath/a:path</td>
+<td style="text-align:center">将指定路径的所有文件追加到默认bootstrap路径中；</td>
+</tr>
+<tr>
+<td style="text-align:center">-Xbootclasspath/p:path</td>
+<td style="text-align:center">让jvm优先于bootstrap默认路径加载指定路径的所有文件；</td>
+</tr>
+<tr>
+<td style="text-align:center">-Xcheck:jni</td>
+<td style="text-align:center">对JNI函数进行附加check；此时jvm将校验传递给JNI函数参数的合法性，在本地代码中遇到非法数据时，jmv将报一个致命错误而终止；使用该参数后将造成性能下降，请慎用。</td>
+</tr>
+<tr>
+<td style="text-align:center">-Xfuture</td>
+<td style="text-align:center">让jvm对类文件执行严格的格式检查（默认jvm不进行严格格式检查），以符合类文件格式规范，推荐开发人员使用该参数。</td>
+</tr>
+<tr>
+<td style="text-align:center">-Xnoclassgc</td>
+<td style="text-align:center">关闭针对class的gc功能；因为其阻止内存回收，所以可能会导致OutOfMemoryError错误，慎用；</td>
+</tr>
+<tr>
+<td style="text-align:center">-Xincgc</td>
+<td style="text-align:center">开启增量gc（默认为关闭）；这有助于减少长时间GC时应用程序出现的停顿；但由于可能和应用程序并发执行，所以会降低CPU对应用的处理能力。</td>
+</tr>
+<tr>
+<td style="text-align:center">-Xloggc:file</td>
+<td style="text-align:center">与-verbose:gc功能类似，只是将每次GC事件的相关情况记录到一个文件中，文件的位置最好在本地，以避免网络的潜在问题。若与verbose命令同时出现在命令行中，则以-Xloggc为准。</td>
+</tr>
+<tr>
+<td style="text-align:center">-Xprof</td>
+<td style="text-align:center">跟踪正运行的程序，并将跟踪数据在标准输出输出；适合于开发环境调试。</td>
+</tr>
+<tr>
+<td style="text-align:center">-Xrs</td>
+<td style="text-align:center">减少jvm对操作系统信号（signals）的使用，该参数从1.3.1开始有效；从jdk1.3.0开始，jvm允许程序在关闭之前还可以执行一些代码（比如关闭数据库的连接池），即使jvm被突然终止；jvm 关闭工具通过监控控制台的相关事件而满足以上的功能；更确切的说，通知在关闭工具执行之前，先注册控制台的控制handler，然后对 CTRL_C_EVENT, CTRL_CLOSE_EVENT,CTRL_LOGOFF_EVENT, and CTRL_SHUTDOWN_EVENT这几类事件直接返回true。但如果jvm以服务的形式在后台运行（比如servlet引擎），他能接收CTRL_LOGOFF_EVENT事件，但此时并不需要初始化关闭程序；为了避免类似冲突的再次出现，从jdk1.3.1开始提供-Xrs参数；当此参数被设置之后，jvm将不接收控制台的控制handler，也就是说他不监控和处理CTRL_C_EVENT, CTRL_CLOSE_EVENT, CTRL_LOGOFF_EVENT, orCTRL_SHUTDOWN_EVENT事件。</td>
+</tr>
+</tbody>
+</table>
+<p>三、非Stable参数</p>
+<p>前面我们提到用-XX作为前缀的参数列表在jvm中可能是不健壮的，SUN也不推荐使用，后续可能会在没有通知的情况下就直接取消了；但是由于这些参数中的确有很多是对我们很有用的，比如我们经常会见到的-XX:PermSize、-XX:MaxPermSize等等；</p>
+<p>下面我们将就Java HotSpot VM中-XX:的可配置参数列表进行描述；<br>这些参数可以被松散的聚合成三类：<br>行为参数（Behavioral Options）：用于改变jvm的一些基础行为；<br>性能调优（Performance Tuning）：用于jvm的性能调优；<br>调试参数（Debugging Options）：一般用于打开跟踪、打印、输出等jvm参数，用于显示jvm更加详细的信息；</p>
+<p>　　由于sun官方文档中对各参数的描述也都非常少（大多只有一句话），而且大多涉及OS层面的东西，很难描述清楚，所以以下是挑选了一些我们开发中可能会用得比较多的配置项。</p>
+<p>首先来介绍行为参数：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">参数</th>
+<th style="text-align:center">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">-XX:-DisableExplicitGC</td>
+<td style="text-align:center">禁止调用System.gc()；但jvm的gc仍然有效</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:+MaxFDLimit</td>
+<td style="text-align:center">最大化文件描述符的数量限制</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:+ScavengeBeforeFullGC</td>
+<td style="text-align:center">新生代GC优先于Full GC执行</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:+UseGCOverheadLimit</td>
+<td style="text-align:center">在抛出OOM之前限制jvm耗费在GC上的时间比例</td>
+</tr>
+<tr>
+<td style="text-align:center"><b>-XX:-UseConcMarkSweepGC</b></td>
+<td style="text-align:center">对老生代采用并发标记交换算法进行GC</td>
+</tr>
+<tr>
+<td style="text-align:center"><b>-XX:-UseParallelGC</b></td>
+<td style="text-align:center">启用并行GC</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:-UseParallelOldGC</td>
+<td style="text-align:center">对Full GC启用并行，当-XX:-UseParallelGC启用时该项自动启用</td>
+</tr>
+<tr>
+<td style="text-align:center"><b>-XX:-UseSerialGC</b></td>
+<td style="text-align:center">启用串行GC</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:+UseThreadPriorities</td>
+<td style="text-align:center">启用本地线程优先级</td>
+</tr>
+</tbody>
+</table>
+<p>上面表格中黑体的三个参数代表着jvm中GC执行的三种方式，即串行、并行、并发；</p>
+<p>串行（SerialGC）是jvm的默认GC方式，一般适用于小型应用和单处理器，算法比较简单，GC效率也较高，但可能会给应用带来停顿；</p>
+<p>并行（ParallelGC）是指GC运行时，对应用程序运行没有影响，GC和app两者的线程在并发执行，这样可以最大限度不影响app的运行；</p>
+<p>并发（ConcMarkSweepGC）是指多个线程并发执行GC，一般适用于多处理器系统中，可以提高GC的效率，但算法复杂，系统消耗较大；</p>
+<p>性能调优参数列表：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">参数及其默认值</th>
+<th style="text-align:center">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">-XX:LargePageSizeInBytes=4m</td>
+<td style="text-align:center">设置用于Java堆的大页面尺寸</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:MaxHeapFreeRatio=70</td>
+<td style="text-align:center">GC后java堆中空闲量占的最大比例</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:MinHeapFreeRatio=40</td>
+<td style="text-align:center">GC后java堆中空闲量占的最小比例</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:MaxNewSize=size</td>
+<td style="text-align:center">新生代占用内存的最大值</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:PermSize</td>
+<td style="text-align:center">表示非堆区初始内存分配大小，其缩写为permanent size（持久化内存）</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:MaxPermSize=64m</td>
+<td style="text-align:center">表示对非堆区分配的内存的最大上限</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:NewRatio=2</td>
+<td style="text-align:center">新生代内存容量与老生代内存容量的比例</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:SurvivorRatio</td>
+<td style="text-align:center">新生代中survivor区和eden区的比例</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:NewSize=2.125m</td>
+<td style="text-align:center">新生代占用内存的初始值</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:ReservedCodeCacheSize=32m</td>
+<td style="text-align:center">保留代码占用的内存容量</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:ThreadStackSize=512</td>
+<td style="text-align:center">设置线程栈大小，若为0则使用系统默认值</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:+UseLargePages</td>
+<td style="text-align:center">使用大页面内存</td>
+</tr>
+</tbody>
+</table>
+<p>调试参数列表：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">参数及其默认值</th>
+<th style="text-align:center">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">-XX:-CITime</td>
+<td style="text-align:center">打印消耗在JIT编译的时间</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:ErrorFile=./hs_err_pid<pid>.log</pid></td>
+<td style="text-align:center">保存错误日志或者数据到文件中</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:-ExtendedDTraceProbes</td>
+<td style="text-align:center">开启solaris特有的dtrace探针</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:HeapDumpPath=./java_pid<pid>.hprof</pid></td>
+<td style="text-align:center">指定导出堆信息时的路径或文件名</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:-HeapDumpOnOutOfMemoryError</td>
+<td style="text-align:center">当首次遭遇OOM时导出此时堆中相关信息</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:OnError=””</td>
+<td style="text-align:center">出现致命ERROR之后运行自定义命令</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:OnOutOfMemoryError=””</td>
+<td style="text-align:center">当首次遭遇OOM时执行自定义命令</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:-PrintClassHistogram</td>
+<td style="text-align:center">遇到Ctrl-Break后打印类实例的柱状信息，与jmap -histo功能相同</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:-PrintConcurrentLocks</td>
+<td style="text-align:center">遇到Ctrl-Break后打印并发锁的相关信息，与jstack -l功能相同</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:-PrintCommandLineFlags</td>
+<td style="text-align:center">打印在命令行中出现过的标记</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:-PrintCompilation</td>
+<td style="text-align:center">当一个方法被编译时打印相关信息</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:-PrintGC</td>
+<td style="text-align:center">每次GC时打印相关信息</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:-PrintGC Details</td>
+<td style="text-align:center">每次GC时打印详细信息</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:-PrintGCTimeStamps</td>
+<td style="text-align:center">打印每次GC的时间戳</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:-TraceClassLoading</td>
+<td style="text-align:center">跟踪类的加载信息</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:-TraceClassLoadingPreorder</td>
+<td style="text-align:center">跟踪被引用到的所有类的加载信息</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:-TraceClassResolution</td>
+<td style="text-align:center">跟踪常量池</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:-TraceClassUnloading</td>
+<td style="text-align:center">跟踪类的卸载信息</td>
+</tr>
+<tr>
+<td style="text-align:center">-XX:-TraceLoaderConstraints</td>
+<td style="text-align:center">跟踪类加载器约束的相关信息</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4、如何查看JVM的内存使用情况？"><a href="#4、如何查看JVM的内存使用情况？" class="headerlink" title="4、如何查看JVM的内存使用情况？"></a>4、如何查看JVM的内存使用情况？</h2><p>可以使用JDK自带的JConsole、JVisualVM、JMap、JHat等工具，或者使用第三方工具，比如 Eclipse Memory Analyzer</p>
+<h2 id="5、Java程序是否会内存溢出，内存泄漏情况发生？举几个例子。"><a href="#5、Java程序是否会内存溢出，内存泄漏情况发生？举几个例子。" class="headerlink" title="5、Java程序是否会内存溢出，内存泄漏情况发生？举几个例子。"></a>5、Java程序是否会内存溢出，内存泄漏情况发生？举几个例子。</h2><p>内存溢出，比如给JVM分配的内存不够大，或者程序中存在死循环一直申请内存。</p>
+<p>内存泄露，比如下面这段代码，list持有o的引用，o暂时是无法被JVM垃圾回收的，只有当list被垃圾回收或者o从对象list删除掉后，o才能被JVM垃圾回收。</p>
+<figure class="highlight qml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">List&lt;<span class="built_in">Object</span>&gt; <span class="built_in">list</span> = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line"><span class="built_in">Object</span> o = <span class="keyword">new</span> <span class="built_in">Object</span>();</div><div class="line"><span class="built_in">list</span>.add(o);</div><div class="line">o = <span class="literal">null</span>;</div></pre></td></tr></table></figure>
+<h2 id="6、你常用的JVM配置和调优参数都有哪些？分别什么作用？"><a href="#6、你常用的JVM配置和调优参数都有哪些？分别什么作用？" class="headerlink" title="6、你常用的JVM配置和调优参数都有哪些？分别什么作用？"></a>6、你常用的JVM配置和调优参数都有哪些？分别什么作用？</h2><p>参考 <a href="#3、JVM有哪些常用启动参数可以调整，描述几个？">3、JVM有哪些常用启动参数可以调整，描述几个？</a></p>
+<h2 id="7、JVM的内存结构？"><a href="#7、JVM的内存结构？" class="headerlink" title="7、JVM的内存结构？"></a>7、JVM的内存结构？</h2><p>see <a href="#10、JVM内存结构，为什么需要GC？">10、JVM内存结构，为什么需要GC?</a></p>
+<h2 id="8、常用的GC策略，什么时候会触发YGC，什么时候触发FGC？"><a href="#8、常用的GC策略，什么时候会触发YGC，什么时候触发FGC？" class="headerlink" title="8、常用的GC策略，什么时候会触发YGC，什么时候触发FGC？"></a>8、常用的GC策略，什么时候会触发YGC，什么时候触发FGC？</h2><p>YGC(Young GC)：对新生代堆进行GC。频率比较高，因为大部分对象的存活寿命较短，在新生代里被回收。性能耗费较小。</p>
+<p>FGC(Full GC)：全堆范围的GC。默认堆空间使用到达80%(可调整)的时候会触发FGC。以我们生产环境为例，一般比较少会触发FGC，有时10天或一周左右会有一次。</p>
+<p>YGC的时机:</p>
+<p>1、Eden区空间不足</p>
+<p>FGC的时机：</p>
+<p>1、Old空间不足；</p>
+<p>2、Perm空间不足；</p>
+<p>3、显示调用System.gc() ，包括RMI等的定时触发;</p>
+<p>4、YGC时的悲观策略；</p>
+<p>5、dump live的内存信息时(jmap –dump:live)。</p>
+<p>对YGC的 触发时机，相当的显而易见，就是Eden区空间不足， 这时候就肯定会触发YGC</p>
+<p>对于FGC的触发时机， old空间不足， 和perm的空间不足， 调用system.gc()这几个都比较显而易见，就是在这种情况下， 一般都会触发GC。</p>
+<p>最复杂的是所谓的悲观策略，它触发的机制是在首先会计算之前晋升的平均大小，也就是从新生代，通过YGC变成新生代的平均大小，然后如果旧生代剩余的空间小于晋升大小，那么就会触发一次FullGC。sdk考虑的策略是， 从平均和长远的情况来看，下次晋升空间不够的可能性非常大， 与其等到那时候在FullGC 不如悲观的认为下次肯定会触发FullGC， 直接先执行一次FullGC。而且从实际使用过程中来看， 也达到了比较稳定的效果。</p>
+<h1 id="四、多线程-并发"><a href="#四、多线程-并发" class="headerlink" title="四、多线程/并发"></a>四、多线程/并发</h1><h2 id="1、如何创建线程？如何保证线程安全？"><a href="#1、如何创建线程？如何保证线程安全？" class="headerlink" title="1、如何创建线程？如何保证线程安全？"></a>1、如何创建线程？如何保证线程安全？</h2><p>继承Thread类，实现Runnable接口，使用Executor框架来创建线程池。</p>
+<p>使用volatile、synchronized关键字或者Jdk的各种并发API可以保证线程安全</p>
+<h2 id="2、什么是死锁？如何避免"><a href="#2、什么是死锁？如何避免" class="headerlink" title="2、什么是死锁？如何避免"></a>2、什么是死锁？如何避免</h2><p>死锁是两个或两个以上的线程都在等待对方执行完毕才能往下执行下去，结果就是所有的线程都陷入的无限的等待当中；</p>
+<p>死锁的发生有着四个必要条件，分别是互斥性，请求和保持，不可剥夺和循环等待条件，只要破坏了任意条件死锁就不会发生，最简单的方法就是线程以同样的顺序加锁和释放锁，也就是破坏了第四个条件。</p>
+<h2 id="3、Volatile关键字的作用？"><a href="#3、Volatile关键字的作用？" class="headerlink" title="3、Volatile关键字的作用？"></a>3、Volatile关键字的作用？</h2><p>保证变量的可见性，即读取的变量值一定是最新的，并不能保证线程安全</p>
+<h2 id="4、HashMap在多线程环境下使用需要注意什么？为什么？"><a href="#4、HashMap在多线程环境下使用需要注意什么？为什么？" class="headerlink" title="4、HashMap在多线程环境下使用需要注意什么？为什么？"></a>4、HashMap在多线程环境下使用需要注意什么？为什么？</h2><p>要注意死循环的问题，HashMap的put操作可以造成重新分配存储大小resize的动作，这个动作在多线程并发下会发生线程死循环的问题。</p>
+<h2 id="5、Java程序中启动一个线程是用run-还是start-？"><a href="#5、Java程序中启动一个线程是用run-还是start-？" class="headerlink" title="5、Java程序中启动一个线程是用run()还是start()？"></a>5、Java程序中启动一个线程是用run()还是start()？</h2><p>start()</p>
+<h2 id="6、什么是守护线程？有什么用？"><a href="#6、什么是守护线程？有什么用？" class="headerlink" title="6、什么是守护线程？有什么用？"></a>6、什么是守护线程？有什么用？</h2><p>守护线程（即daemon thread），是个服务线程，准确地来说就是服务其他的线程，这是它的作用——而其他的线程只有一种，那就是用户线程。所以java里线程分2种，</p>
+<p>1、守护线程，比如垃圾回收线程，就是最典型的守护线程。</p>
+<p>2、用户线程，就是应用程序里的自定义线程。</p>
+<h2 id="7、线程和进程的差别是什么？"><a href="#7、线程和进程的差别是什么？" class="headerlink" title="7、线程和进程的差别是什么？"></a>7、线程和进程的差别是什么？</h2><p>进程是执行着的应用程序，线程是进程的一个执行序列，一个进程可以有多个线程。</p>
+<h2 id="8、Java里面的Threadlocal是怎样实现的？"><a href="#8、Java里面的Threadlocal是怎样实现的？" class="headerlink" title="8、Java里面的Threadlocal是怎样实现的？"></a>8、Java里面的Threadlocal是怎样实现的？</h2><p>ThreadLocal：线程局部变量。为每一个使用该变量的线程都提供一个变量值的副本，是每一个线程都可以独立地改变自己的副本，而不会和其它线程的副本冲突。从线程的角度看，就好像每一个线程都完全拥有该变量。</p>
+<p>每个运行的线程都会有一个类型为ThreadLocal.ThreadLocalMap的map,这个map就是用来存储与这个线程绑定的变量。</p>
+<h2 id="9、ConcurrentHashMap的实现原理是？"><a href="#9、ConcurrentHashMap的实现原理是？" class="headerlink" title="9、ConcurrentHashMap的实现原理是？"></a>9、ConcurrentHashMap的实现原理是？</h2><p>在jdk1.6中ConcurrentHashMap使用锁分段技术提高并发访问效率。首先将数据分成一段一段地存储，然后给每一段数据配一个锁，当一个线程占用锁访问其中一段数据时，其他段的数据也能被其他线程访问。然而在jdk1.8中的实现已经抛弃了Segment分段锁机制，利用CAS+Synchronized来保证并发更新的安全，底层依然采用数组+链表+红黑树的存储结构。</p>
+<p>附：<a href="https://www.jianshu.com/p/fb6e91b013cc" target="_blank" rel="external">深入浅出CAS</a></p>
+<h2 id="10、sleep和wait区别"><a href="#10、sleep和wait区别" class="headerlink" title="10、sleep和wait区别"></a>10、sleep和wait区别</h2><p>调用sleep方法不会释放锁，调用wait方法会释放锁</p>
+<h2 id="12、notify和notifyAll区别"><a href="#12、notify和notifyAll区别" class="headerlink" title="12、notify和notifyAll区别"></a>12、notify和notifyAll区别</h2><p>notify唤醒一个处于wait状态的线程，notifyAll唤醒所有处于wait状态的线程，它们的相同点是最终只会有一个线程获得锁</p>
+<h2 id="13、两个线程如何串行执行"><a href="#13、两个线程如何串行执行" class="headerlink" title="13、两个线程如何串行执行"></a>13、两个线程如何串行执行</h2><p>加锁</p>
+<h2 id="14、上下文切换是什么含义"><a href="#14、上下文切换是什么含义" class="headerlink" title="14、上下文切换是什么含义"></a>14、上下文切换是什么含义</h2><p>上下文切换是存储和恢复线程状态的过程，它使得线程执行能够从中断点恢复执行。上下文切换是多任务操作系统和多线程环境的基本特征。</p>
+<h2 id="15、可以运行时kill掉一个线程吗？"><a href="#15、可以运行时kill掉一个线程吗？" class="headerlink" title="15、可以运行时kill掉一个线程吗？"></a>15、可以运行时kill掉一个线程吗？</h2><p>不可以，线程有5种状态，新建（new）、可运行（runnable）、运行中（running）、阻塞（block）、死亡（dead）。</p>
+<p>只有当线程run方法或者主线程main方法结束，又或者抛出异常时，线程才会结束生命周期。</p>
+<h2 id="16、什么是条件锁、读写锁、自旋锁、可重入锁？"><a href="#16、什么是条件锁、读写锁、自旋锁、可重入锁？" class="headerlink" title="16、什么是条件锁、读写锁、自旋锁、可重入锁？"></a>16、什么是条件锁、读写锁、自旋锁、可重入锁？</h2><p><a href="https://www.cnblogs.com/my376908915/p/6758681.html" target="_blank" rel="external">https://www.cnblogs.com/my376908915/p/6758681.html</a></p>
+<p><a href="http://blog.csdn.net/a314773862/article/details/54095819" target="_blank" rel="external">http://blog.csdn.net/a314773862/article/details/54095819</a></p>
+<h2 id="17、线程池ThreadPoolExecutor的实现原理？"><a href="#17、线程池ThreadPoolExecutor的实现原理？" class="headerlink" title="17、线程池ThreadPoolExecutor的实现原理？"></a>17、线程池ThreadPoolExecutor的实现原理？</h2><p><a href="https://www.jianshu.com/p/87bff5cc8d8c" target="_blank" rel="external">深入分析java线程池的实现原理</a></p>
+<h1 id="五、Linux使用与问题分析排查"><a href="#五、Linux使用与问题分析排查" class="headerlink" title="五、Linux使用与问题分析排查"></a>五、Linux使用与问题分析排查</h1><h2 id="1、使用两种命令创建一个文件？"><a href="#1、使用两种命令创建一个文件？" class="headerlink" title="1、使用两种命令创建一个文件？"></a>1、使用两种命令创建一个文件？</h2><p>touch filename  建立一个空文件</p>
+<p>cat &gt; filename  建立一文件，然后把接下来的键盘输入写入文件，直到按Ctrl+D为止</p>
+<h2 id="2、硬链接和软链接的区别？"><a href="#2、硬链接和软链接的区别？" class="headerlink" title="2、硬链接和软链接的区别？"></a>2、硬链接和软链接的区别？</h2><p>硬链接：</p>
+<p>1、文件有相同的 inode 及 data block；</p>
+<p>2、只能对已存在的文件进行创建；</p>
+<p>3、不能交叉文件系统进行硬链接的创建；</p>
+<p>4、不能对目录进行创建，只可对文件创建；</p>
+<p>5、删除一个硬链接文件并不影响其他有相同 inode 号的文件。</p>
+<p>软连接：</p>
+<p>1、软链接有自己的文件属性及权限等；</p>
+<p>2、可对不存在的文件或目录创建软链接；</p>
+<p>3、软链接可交叉文件系统；</p>
+<p>4、软链接可对文件或目录创建；</p>
+<p>5、创建软链接时，链接计数 i_nlink 不会增加；</p>
+<p>6、删除软链接并不影响被指向的文件，但若被指向的原文件被删除，则相关软连接被称为死链接（即 dangling link，若被指向路径文件被重新创建，死链接可恢复为正常的软链接）。</p>
+<h2 id="3、Linux常用命令有哪些？"><a href="#3、Linux常用命令有哪些？" class="headerlink" title="3、Linux常用命令有哪些？"></a>3、Linux常用命令有哪些？</h2><p><a href="http://blog.csdn.net/ljianhui/article/details/11100625/" target="_blank" rel="external">初窥Linux之我最常用的20条命令</a></p>
+<p>我的常用：</p>
+<p>查找关闭端口进程 <code>netstat -nlp | grep :3306</code> <code>kill pid</code></p>
+<p>删除文件 <code>rm -rf</code></p>
+<p>查找日志 <code>cat xx.log | grep &#39;xxx&#39; | more</code></p>
+<p>解压tar.gz <code>tar -xzvf file.tar.gz</code></p>
+<p>创建文件 <code>touch filename cat &gt; filename</code></p>
+<p>修改文件 <code>vi</code></p>
+<h2 id="4、怎么看一个Java线程的资源耗用？"><a href="#4、怎么看一个Java线程的资源耗用？" class="headerlink" title="4、怎么看一个Java线程的资源耗用？"></a>4、怎么看一个Java线程的资源耗用？</h2><p>linux下，所有的java内部线程，其实都对应了一个进程id，也就是说，linux上的jvm将java程序中的线程映射为操作系统进程。</p>
+<p>1、<code>jps -lvm</code>或者<code>ps -ef | grep java</code>查看当前机器上运行的Java应用进程</p>
+<p>2、<code>top -Hp pid</code>可以查看Java所有线程的资源耗用</p>
+<p>4、<code>printf &quot;%x\n&quot; pid</code>等到线程ID的16进制</p>
+<p>5、<code>jstack Java应用进程ID | grep 线程ID的16进制</code></p>
+<h2 id="5、Load过高的可能性有哪些？"><a href="#5、Load过高的可能性有哪些？" class="headerlink" title="5、Load过高的可能性有哪些？"></a>5、Load过高的可能性有哪些？</h2><p><a href="https://www.cnblogs.com/lddbupt/p/5779655.html" target="_blank" rel="external">cpu load过高问题排查</a></p>
+<p>cpu load的飙升，一方面可能和full gc的次数增大有关，一方面可能和死循环有关系</p>
+<h2 id="6、-etc-hosts文件什么作用？"><a href="#6、-etc-hosts文件什么作用？" class="headerlink" title="6、/etc/hosts文件什么作用？"></a>6、/etc/hosts文件什么作用？</h2><p>在当前主机给ip设置别名，通过该别名可以访问到该ip地址，通过别名、ip访问的效果是一样的</p>
+<h2 id="7、如何快速的将一个文本中所有“abc”替换为“xyz”？"><a href="#7、如何快速的将一个文本中所有“abc”替换为“xyz”？" class="headerlink" title="7、如何快速的将一个文本中所有“abc”替换为“xyz”？"></a>7、如何快速的将一个文本中所有“abc”替换为“xyz”？</h2><p><code>vi filename</code>编辑文本，按Esc键，输入<code>:%s/abc/xyz/g</code></p>
+<h2 id="8、如何在log文件中搜索找出error的日志？"><a href="#8、如何在log文件中搜索找出error的日志？" class="headerlink" title="8、如何在log文件中搜索找出error的日志？"></a>8、如何在log文件中搜索找出error的日志？</h2><p><code>cat xx.log | grep &#39;error&#39;</code></p>
+<h2 id="9、发现磁盘空间不够，如何快速找出占用空间最大的文件？"><a href="#9、发现磁盘空间不够，如何快速找出占用空间最大的文件？" class="headerlink" title="9、发现磁盘空间不够，如何快速找出占用空间最大的文件？"></a>9、发现磁盘空间不够，如何快速找出占用空间最大的文件？</h2><p><a href="http://blog.csdn.net/Del_Zhu/article/details/52169442" target="_blank" rel="external">Linux下查找大文件，大目录的方法</a></p>
+<p><code>find . -type f -size +100M | xargs du -h | sort -nr</code></p>
+<h2 id="10、Java服务端问题排查（OOM，CPU高，Load高，类冲突）"><a href="#10、Java服务端问题排查（OOM，CPU高，Load高，类冲突）" class="headerlink" title="10、Java服务端问题排查（OOM，CPU高，Load高，类冲突）"></a>10、Java服务端问题排查（OOM，CPU高，Load高，类冲突）</h2><p><a href="http://blog.csdn.net/and1kaney/article/details/51214219" target="_blank" rel="external">java线上服务问题排查</a></p>
+<h2 id="11、Java常用问题排查工具及用法（top-iostat-vmstat-sar-tcpdump-jvisualvm-jmap-jconsole）"><a href="#11、Java常用问题排查工具及用法（top-iostat-vmstat-sar-tcpdump-jvisualvm-jmap-jconsole）" class="headerlink" title="11、Java常用问题排查工具及用法（top, iostat, vmstat, sar, tcpdump, jvisualvm, jmap, jconsole）"></a>11、Java常用问题排查工具及用法（top, iostat, vmstat, sar, tcpdump, jvisualvm, jmap, jconsole）</h2><p><a href="http://blog.csdn.net/xad707348125/article/details/51985854" target="_blank" rel="external">Java自带的性能监测工具用法简介——jstack、jconsole、jinfo、jmap、jdb、jsta、jvisualvm</a></p>
+<h2 id="12、Thread-dump文件如何分析（Runnable，锁，代码栈，操作系统线程ID关联）"><a href="#12、Thread-dump文件如何分析（Runnable，锁，代码栈，操作系统线程ID关联）" class="headerlink" title="12、Thread dump文件如何分析（Runnable，锁，代码栈，操作系统线程ID关联）"></a>12、Thread dump文件如何分析（Runnable，锁，代码栈，操作系统线程ID关联）</h2><p><a href="http://blog.csdn.net/rachel_luo/article/details/8920596" target="_blank" rel="external">性能分析之– JAVA Thread Dump 分析综述</a></p>
+<h2 id="13、如何查看Java应用的线程信息？"><a href="#13、如何查看Java应用的线程信息？" class="headerlink" title="13、如何查看Java应用的线程信息？"></a>13、如何查看Java应用的线程信息？</h2><p>参考 <a href="#4、怎么看一个Java线程的资源耗用？">4、怎么看一个Java线程的资源耗用？</a> 通过top命令拿到线程的pid后使用jstack命令</p>
+<h1 id="六、框架使用"><a href="#六、框架使用" class="headerlink" title="六、框架使用"></a>六、框架使用</h1><h2 id="1、描述一下Hibernate的三个状态？"><a href="#1、描述一下Hibernate的三个状态？" class="headerlink" title="1、描述一下Hibernate的三个状态？"></a>1、描述一下Hibernate的三个状态？</h2><p>transient(瞬时状态)：new出来一个对象，还没被保存到数据库中</p>
+<p>persistent(持久化状态)：对象已经保存到数据库中并且在hibernate session也存在该对象</p>
+<p>detached(离线状态)：对象在数据库中存在，hibernate session不存在</p>
+<h2 id="2、Spring中Bean的生命周期。"><a href="#2、Spring中Bean的生命周期。" class="headerlink" title="2、Spring中Bean的生命周期。"></a>2、Spring中Bean的生命周期。</h2><p><img src="/static/img/Spring Bean的生命周期.jpg" alt=""></p>
+<p>1、Spring对Bean进行实例化（相当于程序中的new Xx()）</p>
+<p>2、Spring将值和Bean的引用注入进Bean对应的属性中</p>
+<p>3、如果Bean实现了BeanNameAware接口，Spring将Bean的ID传递给setBeanName()方法（实现BeanNameAware清主要是为了通过Bean的引用来获得Bean的ID，一般业务中是很少有用到Bean的ID的）</p>
+<p>4、如果Bean实现了BeanFactoryAware接口，Spring将调用setBeanDactory(BeanFactory bf)方法并把BeanFactory容器实例作为参数传入。（实现BeanFactoryAware 主要目的是为了获取Spring容器，如Bean通过Spring容器发布事件等）</p>
+<p>5、如果Bean实现了ApplicationContextAwaer接口，Spring容器将调用setApplicationContext(ApplicationContext ctx)方法，把y应用上下文作为参数传入.(作用与BeanFactory类似都是为了获取Spring容器，不同的是Spring容器在调用setApplicationContext方法时会把它自己作为setApplicationContext 的参数传入，而Spring容器在调用setBeanDactory前需要程序员自己指定（注入）setBeanDactory里的参数BeanFactory )</p>
+<p>7、如果Bean实现了BeanPostProcess接口，Spring将调用它们的postProcessBeforeInitialization（预初始化）方法（作用是在Bean实例创建成功后对进行增强处理，如对Bean进行修改，增加某个功能）7.如果Bean实现了InitializingBean接口，Spring将调用它们的afterPropertiesSet方法，作用与在配置文件中对Bean使用init-method声明初始化的作用一样，都是在Bean的全部属性设置成功后执行的初始化方法。</p>
+<p>8、如果Bean实现了BeanPostProcess接口，Spring将调用它们的postProcessAfterInitialization（后初始化）方法（作用与7的一样，只不过7是在Bean初始化前执行的，而这个是在Bean初始化后执行的，时机不同 )</p>
+<p>9、经过以上的工作后，Bean将一直驻留在应用上下文中给应用使用，直到应用上下文被销毁</p>
+<p>10、如果Bean实现了DispostbleBean接口，Spring将调用它的destory方法，作用与在配置文件中对Bean使用destory-method属性的作用一样，都是在Bean实例销毁前执行的方法。</p>
+<h2 id="3、SpringMVC或Struts处理请求的流程。"><a href="#3、SpringMVC或Struts处理请求的流程。" class="headerlink" title="3、SpringMVC或Struts处理请求的流程。"></a>3、SpringMVC或Struts处理请求的流程。</h2><p><a href="https://my.oschina.net/u/3680355/blog/1604198" target="_blank" rel="external">SpringMVC与Struts2的区别及执行流程</a></p>
+<p>springmvc全称是spring web mvc，是spring框架一部分，是一个mvc的框架，和struts2一样是一个表现层框架。</p>
+<p><img src="/static/img/SpringMVC请求执行流程.png" alt=""></p>
+<p>springMVC的执行流程：</p>
+<p>1、 用户发送请求至前端控制器DispatcherServlet</p>
+<p>2、 DispatcherServlet收到请求调用HandlerMapping处理器映射器查找Handler。</p>
+<p>3、 处理器映射器根据请求url找到具体的处理器，生成处理器对象及处理器拦截器(如果有则生成)一并返回给DispatcherServlet。</p>
+<p>4、 DispatcherServlet通过HandlerAdapter处理器适配器调用处理器</p>
+<p>5、 HandlerAdapter调用处理器Handler</p>
+<p>6、 Handler执行完成返回ModelAndView</p>
+<p>7、 HandlerAdapter将Handler执行结果ModelAndView返回给DispatcherServlet</p>
+<p>8、 DispatcherServlet将ModelAndView传给ViewReslover视图解析器，ViewReslover根据逻辑视图名解析View</p>
+<p>9、 ViewReslover返回View</p>
+<p>10、 DispatcherServlet对View进行渲染视图（即将模型数据填充至request域）。</p>
+<p>11、 DispatcherServlet响应用户</p>
+<h2 id="4、Spring-AOP解决了什么问题？怎么实现的？"><a href="#4、Spring-AOP解决了什么问题？怎么实现的？" class="headerlink" title="4、Spring AOP解决了什么问题？怎么实现的？"></a>4、Spring AOP解决了什么问题？怎么实现的？</h2><p><a href="http://blog.csdn.net/moreevan/article/details/11977115/" target="_blank" rel="external">Spring AOP 实现原理</a></p>
+<h2 id="5、Spring事务的传播属性是怎么回事？它会影响什么？"><a href="#5、Spring事务的传播属性是怎么回事？它会影响什么？" class="headerlink" title="5、Spring事务的传播属性是怎么回事？它会影响什么？"></a>5、Spring事务的传播属性是怎么回事？它会影响什么？</h2><p>七个事务传播属性：<br>　PROPAGATION_REQUIRED – 支持当前事务，如果当前没有事务，就新建一个事务。这是最常见的选择。</p>
+<p>　PROPAGATION_SUPPORTS – 支持当前事务，如果当前没有事务，就以非事务方式执行。</p>
+<p>　PROPAGATION_MANDATORY – 支持当前事务，如果当前没有事务，就抛出异常。</p>
+<p>　PROPAGATION_REQUIRES_NEW – 新建事务，如果当前存在事务，把当前事务挂起。</p>
+<p>　PROPAGATION_NOT_SUPPORTED – 以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。</p>
+<p>　PROPAGATION_NEVER – 以非事务方式执行，如果当前存在事务，则抛出异常。</p>
+<p>　PROPAGATION_NESTED – 如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则进行与PROPAGATION_REQUIRED类似的操作。</p>
+<p>五个隔离级别：</p>
+<p>ISOLATION_DEFAULT 这是一个PlatfromTransactionManager默认的隔离级别，使用数据库默认的事务隔离级别.</p>
+<p>另外四个与JDBC的隔离级别相对应：</p>
+<p>ISOLATION_READ_UNCOMMITTED 这是事务最低的隔离级别，它充许别外一个事务可以看到这个事务未提交的数据。这种隔离级别会产生脏读，不可重复读和幻读。</p>
+<p>ISOLATION_READ_COMMITTED 保证一个事务修改的数据提交后才能被另外一个事务读取。另外一个事务不能读取该事务未提交的数据。这种事务隔离级别可以避免脏读出现，但是可能会出现不可重复读和幻读。</p>
+<p>ISOLATION_REPEATABLE_READ 这种事务隔离级别可以防止脏读，不可重复读。但是可能出现幻读。它除了保证一个事务不能读取另一个事务未提交的数据外，还保证了避免不可重复读。</p>
+<p>ISOLATION_SERIALIZABLE 这是花费最高代价但是最可靠的事务隔离级别。事务被处理为顺序执行。除了防止脏读，不可重复读外，还避免了幻读。</p>
+<p>关键词：</p>
+<p>1、幻读：事务1读取记录时事务2增加了记录并提交，事务1再次读取时可以看到事务2新增的记录；</p>
+<p>2、不可重复读：事务1读取记录时，事务2更新了记录并提交，事务1再次读取时可以看到事务2修改后的记录；</p>
+<p>3、脏读：事务1更新了记录，但没有提交，事务2读取了更新后的行，然后事务T1回滚，现在T2读取无效。</p>
+<h2 id="6、Spring中BeanFactory和FactoryBean有什么区别？"><a href="#6、Spring中BeanFactory和FactoryBean有什么区别？" class="headerlink" title="6、Spring中BeanFactory和FactoryBean有什么区别？"></a>6、Spring中BeanFactory和FactoryBean有什么区别？</h2><p>BeanFactory，以Factory结尾，表示它是一个工厂类(接口)，用于管理Bean的一个工厂。在Spring中，BeanFactory是IOC容器的核心接口，它的职责包括：实例化、定位、配置应用程序中的对象及建立这些对象间的依赖。</p>
+<p>FactoryBean以Bean结尾，表示它是一个Bean，不同于普通Bean的是：它是实现了FactoryBean<t>接口的Bean，根据该Bean的ID从BeanFactory中获取的实际上是FactoryBean的getObject()返回的对象，而不是FactoryBean本身，如果要获取FactoryBean对象，请在id前面加一个&amp;符号来获取。</t></p>
+<h2 id="7、Spring框架中IOC的原理是什么？"><a href="#7、Spring框架中IOC的原理是什么？" class="headerlink" title="7、Spring框架中IOC的原理是什么？"></a>7、Spring框架中IOC的原理是什么？</h2><p><a href="https://www.cnblogs.com/cyhzzu/p/6644981.html" target="_blank" rel="external">Spring框架IOC和AOP的实现原理</a></p>
+<h2 id="8、spring的依赖注入有哪几种方式"><a href="#8、spring的依赖注入有哪几种方式" class="headerlink" title="8、spring的依赖注入有哪几种方式"></a>8、spring的依赖注入有哪几种方式</h2><p>在Spring容器中为一个bean配置依赖注入有四种方式：</p>
+<p>  使用属性的setter方法注入  这是最常用的方式；</p>
+<p>  使用构造器注入；</p>
+<p>  使用Filed注入（用于注解方式）.</p>
+<p>  静态、实例工厂的方法注入</p>
+<h2 id="9、struts工作流程"><a href="#9、struts工作流程" class="headerlink" title="9、struts工作流程"></a>9、struts工作流程</h2><p>Struts2是一个基于MVC设计模式的Web应用框架，它本质上相当于一个servlet，在MVC设计模式中，Struts2作为控制器(Controller)来建立模型与视图的数据交互 Struts2=struts1+webwork。</p>
+<p><img src="/static/img/Struts2请求执行流程.png" alt="">]</p>
+<p>struts2的执行流程：</p>
+<p>1、客户端浏览器发出HTTP请求。</p>
+<p>2、根据web.xml配置，该请求被FilterDispatcher接收。</p>
+<p>3、根据struts.xml配置，找到需要调用的Action类和方法， 并通过IoC方式，将值注入给Aciton。</p>
+<p>4、Action调用业务逻辑组件处理业务逻辑，这一步包含表单验证。</p>
+<p>5、Action执行完毕，根据struts.xml中的配置找到对应的返回结果result，并跳转到相应页面。</p>
+<p>6、返回HTTP响应到客户端浏览器。</p>
+<h2 id="10、用Spring如何实现一个切面？"><a href="#10、用Spring如何实现一个切面？" class="headerlink" title="10、用Spring如何实现一个切面？"></a>10、用Spring如何实现一个切面？</h2><p><a href="http://blog.csdn.net/kkdelta/article/details/7441829" target="_blank" rel="external">Spring AOP中pointcut expression表达式解析</a><br><figure class="highlight less"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="variable">@Aspect</span></div><div class="line"><span class="variable">@Component</span></div><div class="line">public class LockAspect &#123;</div><div class="line">    <span class="variable">@Pointcut</span>(<span class="string">"@annotation(xx.xx)"</span>)</div><div class="line">    public void pointcut() &#123;</div><div class="line"></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="variable">@Around</span>(<span class="string">"pointcut()"</span>)</div><div class="line">    public Object arount(ProceedingJoinPoint point) throws Throwable &#123;</div><div class="line">      ...</div><div class="line">      <span class="selector-tag">try</span> &#123;</div><div class="line">        <span class="selector-tag">return</span> <span class="selector-tag">point</span><span class="selector-class">.proceed</span>();</div><div class="line">      &#125; <span class="selector-tag">catch</span> (Exception e) &#123;</div><div class="line">        <span class="selector-tag">throw</span> <span class="selector-tag">e</span>;</div><div class="line">      &#125; <span class="selector-tag">finally</span> &#123;</div><div class="line">        ...</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="11、Spring-如何实现数据库事务？"><a href="#11、Spring-如何实现数据库事务？" class="headerlink" title="11、Spring 如何实现数据库事务？"></a>11、Spring 如何实现数据库事务？</h2><p>使用@Transactional注解或在配置文件里面配置</p>
+<h2 id="12、Hibernate对一二级缓存的使用，Lazy-Load的理解；"><a href="#12、Hibernate对一二级缓存的使用，Lazy-Load的理解；" class="headerlink" title="12、Hibernate对一二级缓存的使用，Lazy-Load的理解；"></a>12、Hibernate对一二级缓存的使用，Lazy-Load的理解；</h2><p>一级缓存：</p>
+<p>hibernate的一级缓存是由session提供的，因此它只存在session的生命周期中。也就是说session关闭的时候该session所管理的一级缓存也随之被清除。hibernate的一级缓存是session所内置的，默认开启，不能被卸载，也不能进行任何配置。在缓存中的对象,具有持久性,session对象负责管理.一级缓存的优点是使用同一个session对象多次查询同一个数据对象,仅对数据库查询一次。一级缓存采用的是Key-Value的MAP方式来实现的。在缓存实体对象时，对象的主关键字ID是MAP的Key，实体对象就是对象的值。所以说一级缓存是以实体对象为单位进行存储的。访问的时候使用的是主键关键字ID。一级缓存使用的是自动维护的功能。但可以通过session提供的手动方法对一级缓存的管理进行手动干预。evict()方法用于将某个对象从session的一级缓存中清除。clear()方法用于将session缓存中的方法全部清除。</p>
+<p>二级缓存：</p>
+<p>二级缓存的实现原理与一级缓存是一样的。也是通过Key-Value的Map来实现对对象的缓存。二级缓存是作用在SessionFactory范围内的。因此它可被所有的Session对象所共享。需要注意的是放入缓存中的数据不能有第三方的应用对数据进行修改。</p>
+<p>二级缓存默认关闭，需要程序员手动开启，默认为ehcache实现</p>
+<p>get和load</p>
+<p>get: 及时加载，只要调用get方法立刻向数据库查询</p>
+<p>load:默认使用懒加载，当用到数据的时候才向数据库查询</p>
+<p>懒加载</p>
+<p>当用到数据的时候才向数据库查询，这就是hibernate的懒加载特性。</p>
+<p>延迟加载策略能避免加载应用程序不需要访问的关联对象，以提高应用程序的性能。</p>
+<h2 id="13、mybatis如何实现批量提交？"><a href="#13、mybatis如何实现批量提交？" class="headerlink" title="13、mybatis如何实现批量提交？"></a>13、mybatis如何实现批量提交？</h2><p>通过<foreach>标签，如</foreach></p>
+<figure class="highlight perl"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">insert into sys_user_role</div><div class="line">(</div><div class="line"><span class="string">`user_id`</span>,</div><div class="line"><span class="string">`role_id`</span></div><div class="line">)</div><div class="line"><span class="keyword">values</span></div><div class="line">&lt;<span class="keyword">foreach</span> collection=<span class="string">"roleIdList"</span> item=<span class="string">"item"</span> <span class="keyword">index</span>=<span class="string">"index"</span> separator=<span class="string">","</span>&gt;</div><div class="line">    (</div><div class="line">    <span class="comment">#&#123;userId&#125;,</span></div><div class="line">    <span class="comment">#&#123;item&#125;</span></div><div class="line">    )</div><div class="line">&lt;<span class="regexp">/foreach&gt;</span></div></pre></td></tr></table></figure>
+<p>通过ExecutorType.BATCH，代码大致如下</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> void batchInsert(<span class="keyword">List</span>&lt;T&gt; <span class="keyword">list</span>, <span class="class"><span class="keyword">Class</span>&lt;? <span class="keyword">extends</span> <span class="title">SqlMapper</span>&lt;<span class="title">T</span>&gt;&gt; <span class="title">mapper</span>) </span>&#123;  </div><div class="line">    sessionTemplate = <span class="keyword">new</span> SqlSessionTemplate(sqlSessionFactory,ExecutorType.BATCH);  </div><div class="line"></div><div class="line">    SqlSession session = sqlSessionFactory.openSession(ExecutorType.BATCH,<span class="keyword">false</span>);</div><div class="line"></div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">      <span class="keyword">for</span> (T vo : <span class="keyword">list</span>) &#123;  </div><div class="line">        sessionTemplate.getMapper(mapper).insert(vo);  </div><div class="line">      &#125;</div><div class="line">      session.commit();  </div><div class="line">    &#125; <span class="keyword">catch</span> (<span class="keyword">Exception</span> e) &#123;</div><div class="line">      session.rollback();</div><div class="line">    &#125; <span class="keyword">finally</span> &#123;</div><div class="line">      session.close();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h1 id="七、数据库相关"><a href="#七、数据库相关" class="headerlink" title="七、数据库相关"></a>七、数据库相关</h1><h2 id="1、MySQL-InnoDB、Mysaim的特点？"><a href="#1、MySQL-InnoDB、Mysaim的特点？" class="headerlink" title="1、MySQL InnoDB、Mysaim的特点？"></a>1、MySQL InnoDB、Mysaim的特点？</h2><p>InnoDB：</p>
+<p>支持事务处理</p>
+<p>支持外键</p>
+<p>支持行锁</p>
+<p>不支持FULLTEXT类型的索引（在Mysql5.6已引入）</p>
+<p>不保存表的具体行数，扫描表来计算有多少行</p>
+<p>对于AUTO_INCREMENT类型的字段，不能与其他字段建立组合索引</p>
+<p>DELETE 表时，是一行一行的删除</p>
+<p>InnoDB 把数据和索引存放在表空间里面</p>
+<p>跨平台可直接拷贝使用</p>
+<p>表格很难被压缩</p>
+<p>MyISAM：</p>
+<p>不支持事务，回滚将造成不完全回滚，不具有原子性</p>
+<p>不支持外键</p>
+<p>支持全文搜索</p>
+<p>保存表的具体行数,不带where时，直接返回保存的行数</p>
+<p>DELETE 表时，先drop表，然后重建表</p>
+<p>MyISAM 表被存放在三个文件 。frm 文件存放表格定义。 数据文件是MYD (MYData) 。 索引文件是MYI (MYIndex)引伸</p>
+<p>跨平台很难直接拷贝</p>
+<p>AUTO_INCREMENT类型字段可以和其他字段一起建立联合索引</p>
+<p>表格可以被压缩</p>
+<p>选择：</p>
+<p>因为MyISAM相对简单所以在效率上要优于InnoDB.如果系统读多，写少。对原子性要求低。那么MyISAM最好的选择。且MyISAM恢复速度快。可直接用备份覆盖恢复。<br>如果系统读少，写多的时候，尤其是并发写入高的时候。InnoDB就是首选了。<br>两种类型都有自己优缺点，选择那个完全要看自己的实际类弄。</p>
+<h2 id="2、行锁，表锁；乐观锁，悲观锁"><a href="#2、行锁，表锁；乐观锁，悲观锁" class="headerlink" title="2、行锁，表锁；乐观锁，悲观锁"></a>2、行锁，表锁；乐观锁，悲观锁</h2><p>行锁：数据库表中某一行被锁住。</p>
+<p>表锁：整个数据库表被锁住。</p>
+<p>乐观锁：顾名思义，就是很乐观，每次去拿数据的时候都认为别人不会修改，具体实现是给表增加一个版本号的字段，在执行update操作时比较该版本号是否与当前数据库中版本号一致，如一致，更新数据，反之拒绝。</p>
+<p>悲观锁：顾名思义，就是很悲观，每次去拿数据的时候都认为别人会修改。读数据的时候会上锁，直到update完成才释放锁，使用悲观锁要注意不要锁住整个表。</p>
+<h2 id="3、数据库隔离级别是什么？有什么作用？"><a href="#3、数据库隔离级别是什么？有什么作用？" class="headerlink" title="3、数据库隔离级别是什么？有什么作用？"></a>3、数据库隔离级别是什么？有什么作用？</h2><p>ISOLATION_READ_UNCOMMITTED 这是事务最低的隔离级别，它允许另外一个事务可以看到这个事务未提交的数据。这种隔离级别会产生脏读，不可重复读和幻读。</p>
+<p>ISOLATION_READ_COMMITTED 保证一个事务修改的数据提交后才能被另外一个事务读取。另外一个事务不能读取该事务未提交的数据。这种事务隔离级别可以避免脏读出现，但是可能会出现不可重复读和幻读。</p>
+<p>ISOLATION_REPEATABLE_READ 这种事务隔离级别可以防止脏读，不可重复读。但是可能出现幻读。它除了保证一个事务不能读取另一个事务未提交的数据外，还保证了避免不可重复读。</p>
+<p>ISOLATION_SERIALIZABLE 这是花费最高代价但是最可靠的事务隔离级别。事务被处理为顺序执行。除了防止脏读，不可重复读外，还避免了幻读。</p>
+<h2 id="4、MySQL主备同步的基本原理。"><a href="#4、MySQL主备同步的基本原理。" class="headerlink" title="4、MySQL主备同步的基本原理。"></a>4、MySQL主备同步的基本原理。</h2><p>mysql主备复制实现分成三个步骤：</p>
+<p>1、master将改变记录到二进制日志(binary log)中（这些记录叫做二进制日志事件，binary log events，可以通过show binlog events进行查看）；</p>
+<p>2、slave将master的binary log events拷贝到它的中继日志(relay log)；</p>
+<p>3、slave重做中继日志中的事件，将改变反映它自己的数据。</p>
+<p><img src="/static/img/主从数据库实现原理.png" alt=""></p>
+<h2 id="5、select-from-table-t-where-size-gt-10-group-by-size-order-by-size的sql语句执行顺序？"><a href="#5、select-from-table-t-where-size-gt-10-group-by-size-order-by-size的sql语句执行顺序？" class="headerlink" title="5、select * from table t where size &gt; 10 group by size order by size的sql语句执行顺序？"></a>5、select * from table t where size &gt; 10 group by size order by size的sql语句执行顺序？</h2><p>sql语句执行顺序如下：</p>
+<p>where -&gt; group by -&gt; having -&gt; select -&gt; order by</p>
+<h2 id="6、如何优化数据库性能（索引、分库分表、批量操作、分页算法、升级硬盘SSD、业务优化、主从部署）"><a href="#6、如何优化数据库性能（索引、分库分表、批量操作、分页算法、升级硬盘SSD、业务优化、主从部署）" class="headerlink" title="6、如何优化数据库性能（索引、分库分表、批量操作、分页算法、升级硬盘SSD、业务优化、主从部署）"></a>6、如何优化数据库性能（索引、分库分表、批量操作、分页算法、升级硬盘SSD、业务优化、主从部署）</h2><p>1、选择合适的数据库引擎，使用索引</p>
+<p>2、分页获取数据，只获取需要的字段</p>
+<p>3、优化业务逻辑，减少数据库IO</p>
+<p>4、分库分表</p>
+<p>5、部署主从数据库</p>
+<p>6、升级硬件</p>
+<h2 id="7、SQL什么情况下不会使用索引（不包含，不等于，函数）"><a href="#7、SQL什么情况下不会使用索引（不包含，不等于，函数）" class="headerlink" title="7、SQL什么情况下不会使用索引（不包含，不等于，函数）"></a>7、SQL什么情况下不会使用索引（不包含，不等于，函数）</h2><p><a href="https://www.cnblogs.com/xixibaby/p/6409928.html" target="_blank" rel="external">sql中索引不会被用到的几种情况</a></p>
+<h2 id="8、一般在什么字段上建索引（过滤数据最多的字段）"><a href="#8、一般在什么字段上建索引（过滤数据最多的字段）" class="headerlink" title="8、一般在什么字段上建索引（过滤数据最多的字段）"></a>8、一般在什么字段上建索引（过滤数据最多的字段）</h2><p>1、表的主键、外键必须有索引；</p>
+<p>2、数据量超过300的表应该有索引；</p>
+<p>3、经常与其他表进行连接的表，在连接字段上应该建立索引；</p>
+<p>4、经常出现在Where子句中的字段，特别是大表的字段，应该建立索引；</p>
+<p>5、索引应该建在选择性高的字段上；</p>
+<p>6、索引应该建在小字段上，对于大的文本字段甚至超长字段，不要建索引；</p>
+<h2 id="9、如何从一张表中查出name字段不包含“XYZ”的所有行？"><a href="#9、如何从一张表中查出name字段不包含“XYZ”的所有行？" class="headerlink" title="9、如何从一张表中查出name字段不包含“XYZ”的所有行？"></a>9、如何从一张表中查出name字段不包含“XYZ”的所有行？</h2><p>select * from table where name not like ‘%XYZ%’;</p>
+<h2 id="10、Redis，RDB和AOF，如何做高可用、集群"><a href="#10、Redis，RDB和AOF，如何做高可用、集群" class="headerlink" title="10、Redis，RDB和AOF，如何做高可用、集群"></a>10、Redis，RDB和AOF，如何做高可用、集群</h2><p><a href="http://blog.csdn.net/m0_38110132/article/details/76906422" target="_blank" rel="external">redis的持久化方式RDB和AOF的区别</a></p>
+<p><a href="http://blog.csdn.net/u013063153/article/details/71191138" target="_blank" rel="external">部署高可用的Redis集群架构</a></p>
+<h2 id="11、如何解决高并发减库存问题"><a href="#11、如何解决高并发减库存问题" class="headerlink" title="11、如何解决高并发减库存问题"></a>11、如何解决高并发减库存问题</h2><p>异步处理，减库存加锁</p>
+<h2 id="12、mysql存储引擎中索引的实现机制；"><a href="#12、mysql存储引擎中索引的实现机制；" class="headerlink" title="12、mysql存储引擎中索引的实现机制；"></a>12、mysql存储引擎中索引的实现机制；</h2><p><a href="http://blog.csdn.net/debug_zhang/article/details/52168552" target="_blank" rel="external">mysql索引的实现原理</a></p>
+<h2 id="13、数据库事务的几种粒度；"><a href="#13、数据库事务的几种粒度；" class="headerlink" title="13、数据库事务的几种粒度；"></a>13、数据库事务的几种粒度；</h2><p>这个问题应该是跟数据库锁有关</p>
+<p>数据库锁按照锁定的对象不同可分为：</p>
+<p>表锁定：对整个表的锁定。</p>
+<p>行锁定：只锁定进行更改的行，例如：insert，update，delete，都隐式采用行锁定<br>。</p>
+<p>数据库锁机制可分为多种粒度的： 数据库，表，页面，行</p>
+<p>粒度越大，DBMS管理越容易，但是实现并发处理的能力就越差，表，页面，行</p>
+<h1 id="八、网络协议和网络编程"><a href="#八、网络协议和网络编程" class="headerlink" title="八、网络协议和网络编程"></a>八、网络协议和网络编程</h1><h2 id="1、TCP建立连接的过程。"><a href="#1、TCP建立连接的过程。" class="headerlink" title="1、TCP建立连接的过程。"></a>1、TCP建立连接的过程。</h2><p>三次握手：</p>
+<p>  第一次握手：客户端发送syn包到服务器端，进入syn_send状态，等待服务器端的确认；</p>
+<p>  第二次握手：服务器端收到客户端的syn包，发送syn+ack包给客户端，进入syn_recv状态；</p>
+<p>  第三次握手：客户端收到服务器端的syn+ack包，发送个ack包到服务器端，至此，客户端与服务器端进入established状态；<br>  握手过程中传送的包不包含任何数据，连接建立后才会开始传送数据，理想状态下，TCP连接一旦建立，在通信双方的任何一方主动关闭连接前，TCP连接都会一直保持下去。</p>
+<h2 id="2、TCP断开连接的过程。"><a href="#2、TCP断开连接的过程。" class="headerlink" title="2、TCP断开连接的过程。"></a>2、TCP断开连接的过程。</h2><p>四次挥手：<br>  第一次挥手：主动关闭方发送fin包到被动关闭方，告诉被动关闭方我不会再给你发送数据了；</p>
+<p>  第二次挥手：被动关闭方收到syn包，发送ack给对方，确认序号为收到序号+1；</p>
+<p>  第三次挥手：被动关闭方也也发送fin包给主动关闭方，告诉对方我也不会给你发送数据了；</p>
+<p>  第四次挥手：主动关闭方收到syn包，发送ack给对方，至此，完成四次挥手；</p>
+<h2 id="3、浏览器发生302跳转背后的逻辑？"><a href="#3、浏览器发生302跳转背后的逻辑？" class="headerlink" title="3、浏览器发生302跳转背后的逻辑？"></a>3、浏览器发生302跳转背后的逻辑？</h2><p>浏览器在原请求地址的响应的Location域找到要跳转的URI执行跳转。</p>
+<p>浏览器输入URL后发生了什么</p>
+<p>1.DNS域名解析；<br>2.建立TCP连接；<br>3.发送HTTP请求；<br>4.服务器处理请求；<br>5.返回响应结果；<br>6.关闭TCP连接；<br>7.浏览器解析HTML；<br>8.浏览器布局渲染；</p>
+<h2 id="4、HTTP协议的交互流程。HTTP和HTTPS的差异，SSL的交互流程？"><a href="#4、HTTP协议的交互流程。HTTP和HTTPS的差异，SSL的交互流程？" class="headerlink" title="4、HTTP协议的交互流程。HTTP和HTTPS的差异，SSL的交互流程？"></a>4、HTTP协议的交互流程。HTTP和HTTPS的差异，SSL的交互流程？</h2><p>Http协议</p>
+<p>1、建立TCP连接；</p>
+<p>2、发送HTTP请求；</p>
+<p>3、服务器处理请求；</p>
+<p>4、返回响应结果；</p>
+<p>5、关闭TCP连接；</p>
+<p>HTTPS协议</p>
+<p>HTTPS协议就是基于SSL的HTTP协议</p>
+<p>HTTPS使用与HTTP不同的端口（HTTP:80 ， HTTPS:443）</p>
+<p>提供了身份验证与加密通信方法，被广泛用于互联网上安全敏感的通信。</p>
+<p>交互过程</p>
+<p>客户端在使用HTTPS方式与Web服务器通信时有以下几个步骤</p>
+<p><img src="/static/img/Https交互流程.png" alt=""></p>
+<p>1、客户端请求SSL连接，并将自己支持的加密规则发给网站。</p>
+<p>2、服务器端将自己的身份信息以证书形式发回给客户端。证书里面包含了网站地址，加密公钥，以及证书的颁发机构。</p>
+<p>3、获得证书后，客户要做以下工作</p>
+<ul>
+<li><p>验证证书合法性</p>
+</li>
+<li><p>如果证书受信任，客户端会生成一串随机数的密码，并用证书提供的公钥进行加密。</p>
+</li>
+<li><p>将加密好的随机数发给服务器。</p>
+</li>
+</ul>
+<p>4、获得到客户端发的加密了的随机数之后，服务器用自己的私钥进行解密，得到这个随机数，把这个随机数作为对称加密的密钥。</p>
+<p>5、之后服务器与客户之间就可以用随机数对各自的信息进行加密，解密。</p>
+<p>注意的是：证书是一个公钥，这个公钥是进行加密用的。而私钥是进行解密用的。公钥任何都知道，私钥只有自己知道。这是非对称加密。</p>
+<p>而对称加密就是钥匙只有一把，我们都知道。<br>之所以用到对称加密，是因为对称加密的速度更快。而非对称加密的可靠性更高。</p>
+<p>HTTP与HTTPS的区别</p>
+<p>1、HTTPS协议需要申请证书。</p>
+<p>2、HTTP是明文传输；HTTPS使用的是具有安全性的SSL加密传输协议</p>
+<p>3、HTTP端口是80；HTTPS端口号是443</p>
+<p>4、HTTP连接简单无状态；HTTPS由SSL+HTTP协议构件的可进行加密传输、身份验证的网络协议。</p>
+<h2 id="5、Rest和Http什么关系？-大家都说Rest很轻量，你对Rest风格如何理解？"><a href="#5、Rest和Http什么关系？-大家都说Rest很轻量，你对Rest风格如何理解？" class="headerlink" title="5、Rest和Http什么关系？ 大家都说Rest很轻量，你对Rest风格如何理解？"></a>5、Rest和Http什么关系？ 大家都说Rest很轻量，你对Rest风格如何理解？</h2><p>Http是一种协议，Rest是一种软件架构风格。</p>
+<p>URL定位资源，用HTTP动词（GET,POST,DELETE,DETC）描述操作。</p>
+<p>GET表示查询、POST表示新建、PUT表示更新、DELETE表示删除等。</p>
+<blockquote>
+<p>GET /api/v1/user 获取用户列表</p>
+<p>GET /api/v1/user/1 获取ID为1的用户</p>
+<p>POST /api/v1/user 新建用户</p>
+<p>PUT /api/v1/user/1 更新ID为1的用户信息</p>
+<p>DELETE /api/v1/user/1 删除ID为1的用户</p>
+</blockquote>
+<h2 id="6、TCP的滑动窗口协议有什么用？讲讲原理。"><a href="#6、TCP的滑动窗口协议有什么用？讲讲原理。" class="headerlink" title="6、TCP的滑动窗口协议有什么用？讲讲原理。"></a>6、TCP的滑动窗口协议有什么用？讲讲原理。</h2><p>滑动窗口协议是传输层进行流控的一种措施，接收方通过通告发送方自己的窗口大小，从而控制发送方的发送速度，从而达到防止发送方发送速度过快而导致来不及接受。</p>
+<p><a href="http://blog.csdn.net/cod_e/article/details/78762747" target="_blank" rel="external">TCP原理 滑动窗口</a></p>
+<h2 id="7、HTTP协议都有哪些方法？"><a href="#7、HTTP协议都有哪些方法？" class="headerlink" title="7、HTTP协议都有哪些方法？"></a>7、HTTP协议都有哪些方法？</h2><p>GET 请求获取由Request-URI所标识的资源。</p>
+<p>POST 在Request-URI所标识的资源后附加新的数据。</p>
+<p>HEAD 请求获取由Request-URI所标识的资源的响应消息报头。</p>
+<p>OPTIONS 请求查询服务器的性能，或查询与资源相关的选项和需求。</p>
+<p>PUT 请求服务器存储一个资源，并用Request-URI作为其标识。</p>
+<p>DELETE 请求服务器删除由Request-URI所标识的资源。</p>
+<p>TRACE 请求服务器回送收到的请求信息，主要用语测试或诊断。</p>
+<h2 id="8、交换机和路由器的区别？"><a href="#8、交换机和路由器的区别？" class="headerlink" title="8、交换机和路由器的区别？"></a>8、交换机和路由器的区别？</h2><p><a href="http://www.cnblogs.com/cherishry/p/5721141.html" target="_blank" rel="external">路由器与交换机的区别</a></p>
+<p>1、工作层次不同</p>
+<ul>
+<li><p>最初的交换机工作在OSI模型中的数据链路层，工作原理简单</p>
+</li>
+<li><p>路由器工作在OSI模型中的网络层，得更多协议信息，做更智能的转发决策</p>
+</li>
+</ul>
+<p>2、数据转发所依据的对象不同</p>
+<ul>
+<li><p>交换机是利用物理地址（MAC地址），确定转发的目的地址。（MAC固化硬件，一般不可更改）</p>
+</li>
+<li><p>路由器是利用IP地址，确定转发的目的地址。（IP通常为网关或系统自动分配的）</p>
+</li>
+</ul>
+<p>3、是否可以分割广播域</p>
+<ul>
+<li><p>传统的交换机可以分割冲突域，不能分割广播域，而路由器可以分割广播域</p>
+</li>
+<li><p>由交换机连接的网段仍然属于同一广播域，广播数据报会在交换机连接的所有网段上传播，某些情况导致通信拥挤和安全漏洞。连接到路由器上的网段被分配成不同的广播域，所以，广播数据不穿过路由器<br>虽然三层交换机可以分割广播域，但是子广播域之间不能通信，还是需要路由器</p>
+</li>
+</ul>
+<p>4、路由器提供了防火墙的服务</p>
+<ul>
+<li>路由器仅仅转发特定地址的数据包，不传送不支持路由协议的数据包，不传送未知目标网络数据包，从而可以防止广播风暴</li>
+</ul>
+<p>5、表</p>
+<p>二层交换机上存在MAC表，三层交换机上存在路由表、MAC表、ARP表，路由器上存在路由表和ARP表。</p>
+<ul>
+<li>总之，交换机在具体的城域网中扮演着VLAN透传的角色，就是桥。路由器的每一个端口都是一个独立的广播域和冲突域，而交换机是只有一个广播域和端口数量的冲突域。</li>
+</ul>
+<h2 id="9、Socket交互的基本流程？"><a href="#9、Socket交互的基本流程？" class="headerlink" title="9、Socket交互的基本流程？"></a>9、Socket交互的基本流程？</h2><p><a href="http://blog.csdn.net/Bingo_12345/article/details/48950075" target="_blank" rel="external">socket通信基本流程</a></p>
+<h2 id="10、http协议（报文结构，断点续传，多线程下载，什么是长连接）"><a href="#10、http协议（报文结构，断点续传，多线程下载，什么是长连接）" class="headerlink" title="10、http协议（报文结构，断点续传，多线程下载，什么是长连接）"></a>10、http协议（报文结构，断点续传，多线程下载，什么是长连接）</h2><h2 id="11、tcp协议（建连过程，慢启动，滑动窗口，七层模型）"><a href="#11、tcp协议（建连过程，慢启动，滑动窗口，七层模型）" class="headerlink" title="11、tcp协议（建连过程，慢启动，滑动窗口，七层模型）"></a>11、tcp协议（建连过程，慢启动，滑动窗口，七层模型）</h2><h2 id="12、webservice协议（wsdl-soap格式，与rest的区别）"><a href="#12、webservice协议（wsdl-soap格式，与rest的区别）" class="headerlink" title="12、webservice协议（wsdl/soap格式，与rest的区别）"></a>12、webservice协议（wsdl/soap格式，与rest的区别）</h2><p><a href="https://www.zhihu.com/question/30547012" target="_blank" rel="external">webservice、RESTful、REST通俗理解</a></p>
+<h2 id="13、NIO的好处，Netty线程模型，什么是零拷贝"><a href="#13、NIO的好处，Netty线程模型，什么是零拷贝" class="headerlink" title="13、NIO的好处，Netty线程模型，什么是零拷贝"></a>13、NIO的好处，Netty线程模型，什么是零拷贝</h2><h1 id="九、Redis等缓存系统-中间件-NoSQL-一致性Hash等"><a href="#九、Redis等缓存系统-中间件-NoSQL-一致性Hash等" class="headerlink" title="九、Redis等缓存系统/中间件/NoSQL/一致性Hash等"></a>九、Redis等缓存系统/中间件/NoSQL/一致性Hash等</h1><h2 id="1、列举一个常用的Redis客户端的并发模型。"><a href="#1、列举一个常用的Redis客户端的并发模型。" class="headerlink" title="1、列举一个常用的Redis客户端的并发模型。"></a>1、列举一个常用的Redis客户端的并发模型。</h2><figure class="highlight cs"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">lock</span> = <span class="number">0</span>;</div><div class="line"><span class="keyword">while</span> (timeout &gt; <span class="number">0</span>) &#123;</div><div class="line">  <span class="keyword">if</span> (setnxexpire(key, <span class="keyword">value</span>)) &#123;</div><div class="line">    <span class="keyword">lock</span> = <span class="number">1</span>;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">lock</span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  timeout -= <span class="function">sleeptime</span></div><div class="line">  <span class="title">sleep</span>(<span class="params">sleeptime</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="2、HBase如何实现模糊查询？"><a href="#2、HBase如何实现模糊查询？" class="headerlink" title="2、HBase如何实现模糊查询？"></a>2、HBase如何实现模糊查询？</h2><figure class="highlight gauss"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">try &#123;  </div><div class="line">    HTable table = <span class="keyword">new</span> HTable(conf, tablename);  </div><div class="line">    Scan s = <span class="keyword">new</span> Scan();</div><div class="line">    <span class="comment">//查询rowkey包括xx的行</span></div><div class="line">    Filter filter = <span class="keyword">new</span> RowFilter(CompareFilter.CompareOp.EQUAL, <span class="keyword">new</span> SubstringComparator(<span class="string">"xx"</span>));</div><div class="line">    s.setFilter(filter);  </div><div class="line">    ResultScanner rs = table.getScanner(s);  </div><div class="line">    <span class="keyword">for</span> (Result r : rs) &#123;  </div><div class="line">       KeyValue[] kv = r.raw();  </div><div class="line">       <span class="keyword">for</span> (int i = <span class="number">0</span>; i &lt; kv.length; i++) &#123;  </div><div class="line">           <span class="keyword">System</span>.out.<span class="keyword">print</span>(<span class="keyword">new</span> <span class="keyword">String</span>(kv[i].<span class="built_in">getRow</span>()) + <span class="string">"  "</span>);  </div><div class="line">           <span class="keyword">System</span>.out.<span class="keyword">print</span>(<span class="keyword">new</span> <span class="keyword">String</span>(kv[i].getFamily()) + <span class="string">":"</span>);  </div><div class="line">           <span class="keyword">System</span>.out.<span class="keyword">print</span>(<span class="keyword">new</span> <span class="keyword">String</span>(kv[i].getQualifier()) + <span class="string">"  "</span>);  </div><div class="line">           <span class="keyword">System</span>.out.<span class="keyword">print</span>(kv[i].getTimestamp() + <span class="string">"  "</span>);  </div><div class="line">           <span class="keyword">System</span>.out.println(<span class="keyword">new</span> <span class="keyword">String</span>(kv[i].getValue()));  </div><div class="line">       &#125;  </div><div class="line">   &#125;  </div><div class="line">&#125; catch (IOException e) &#123;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="3、列举一个常用的消息中间件，如果消息要保序如何实现？"><a href="#3、列举一个常用的消息中间件，如果消息要保序如何实现？" class="headerlink" title="3、列举一个常用的消息中间件，如果消息要保序如何实现？"></a>3、列举一个常用的消息中间件，如果消息要保序如何实现？</h2><p>ActiveMQ、RabbitMQ、kafka</p>
+<p>实现队列，先进先出</p>
+<h2 id="4、如何实现一个Hashtable？你的设计如何考虑Hash冲突？如何优化？"><a href="#4、如何实现一个Hashtable？你的设计如何考虑Hash冲突？如何优化？" class="headerlink" title="4、如何实现一个Hashtable？你的设计如何考虑Hash冲突？如何优化？"></a>4、如何实现一个Hashtable？你的设计如何考虑Hash冲突？如何优化？</h2><p>使用哈希表</p>
+<p><a href="http://blog.csdn.net/feinik/article/details/54974293" target="_blank" rel="external">Hash算法解决冲突的方法
+</a></p>
+<p><a href="http://lib.csdn.net/article/datastructure/30401" target="_blank" rel="external">处理散列冲突：开放定址法</a></p>
+<p>开放定址法、再哈希法、链地址法、建立公共溢出区</p>
+<p>参考Hashmap的链地址法，链表长度大于8时转为红黑树</p>
+<h2 id="5、分布式缓存，一致性hash"><a href="#5、分布式缓存，一致性hash" class="headerlink" title="5、分布式缓存，一致性hash"></a>5、分布式缓存，一致性hash</h2><p><a href="http://blog.csdn.net/onpwerb/article/details/52705307" target="_blank" rel="external">分布式缓存的一致性Hash算法</a></p>
+<p>（1）先构造一个长度为0~2^32的整数环，根据节点名称的Hash值，将缓存服务器节点放置在这个Hash环上。</p>
+<p>（2）根据需要缓存的数据的KEY值计算得到其Hash值，然后在Hash环上顺时针查找距离这个KEY值的Hash值最近的缓存服务器节点，完成KEY到服务器的Hash映射查找。</p>
+<p>补充：</p>
+<p>这个一致性Hash环使用二叉查找树实现，Hash查找过程实际上是在二叉查找树中查找不小于查找树的最小数值。</p>
+<p>另外，为了解决上述算法带来的负载不均衡问题，通过使用虚拟层，将每台物理缓存服务器虚拟为一组虚拟缓存服务器，将虚拟服务器的Hash值放置在Hash环上，KEY在环上先找到虚拟服务器节点，再得到物理服务器的信息。</p>
+<h2 id="6、LRU算法，slab分配，如何减少内存碎片"><a href="#6、LRU算法，slab分配，如何减少内存碎片" class="headerlink" title="6、LRU算法，slab分配，如何减少内存碎片"></a>6、LRU算法，slab分配，如何减少内存碎片</h2><p><a href="http://blog.csdn.net/jake_li/article/details/50659868" target="_blank" rel="external">两种常见的缓存淘汰算法LFU&amp;LRU</a></p>
+<p><a href="http://blog.csdn.net/u010412301/article/details/52471424" target="_blank" rel="external">内存碎片和memcached slab控制碎片方法</a></p>
+<h2 id="7、如何解决缓存单机热点问题"><a href="#7、如何解决缓存单机热点问题" class="headerlink" title="7、如何解决缓存单机热点问题"></a>7、如何解决缓存单机热点问题</h2><p><a href="http://blog.csdn.net/cainiao_user/article/details/78301563" target="_blank" rel="external">如何解决高并发下缓存被击穿的问题</a></p>
+<h2 id="8、什么是布隆过滤器，其实现原理是？-False-positive指的是？"><a href="#8、什么是布隆过滤器，其实现原理是？-False-positive指的是？" class="headerlink" title="8、什么是布隆过滤器，其实现原理是？ False positive指的是？"></a>8、什么是布隆过滤器，其实现原理是？ False positive指的是？</h2><p><a href="http://blog.csdn.net/jiaomeng/article/details/1495500" target="_blank" rel="external">Bloom Filter概念和原理</a></p>
+<p>Bloom Filter是一种空间效率很高的随机数据结构，它利用位数组很简洁地表示一个集合，并能判断一个元素是否属于这个集合。Bloom Filter的这种高效是有一定代价的：在判断一个元素是否属于某个集合时，有可能会把不属于这个集合的元素误认为属于这个集合（false positive）。因此，Bloom Filter不适合那些“零错误”的应用场合。而在能容忍低错误率的应用场合下，Bloom Filter通过极少的错误换取了存储空间的极大节省。</p>
+<h2 id="9、memcache与redis的区别"><a href="#9、memcache与redis的区别" class="headerlink" title="9、memcache与redis的区别"></a>9、memcache与redis的区别</h2><p><a href="http://blog.csdn.net/u013474436/article/details/48632665" target="_blank" rel="external">Redis和Memcache的区别分析</a></p>
+<h2 id="10、zookeeper有什么功能，选举算法如何进行"><a href="#10、zookeeper有什么功能，选举算法如何进行" class="headerlink" title="10、zookeeper有什么功能，选举算法如何进行"></a>10、zookeeper有什么功能，选举算法如何进行</h2><p>zookeeper是一个为分布式应用提供一致性服务的软件，提供的功能包括：配置维护、域名服务、分布式同步、组服务等。</p>
+<p><a href="http://www.cnblogs.com/leesf456/p/6107600.html" target="_blank" rel="external">【分布式】Zookeeper的Leader选举</a></p>
+<h2 id="11、map-reduce过程，如何用map-reduce实现两个数据源的联合统计"><a href="#11、map-reduce过程，如何用map-reduce实现两个数据源的联合统计" class="headerlink" title="11、map/reduce过程，如何用map/reduce实现两个数据源的联合统计"></a>11、map/reduce过程，如何用map/reduce实现两个数据源的联合统计</h2><p><a href="http://hadoop.apache.org/docs/r1.0.4/cn/mapred_tutorial.html" target="_blank" rel="external">Hadoop Map/Reduce教程</a></p>
+<h1 id="十、设计模式与重构"><a href="#十、设计模式与重构" class="headerlink" title="十、设计模式与重构"></a>十、设计模式与重构</h1><h2 id="1、你能举例几个常见的设计模式"><a href="#1、你能举例几个常见的设计模式" class="headerlink" title="1、你能举例几个常见的设计模式"></a>1、你能举例几个常见的设计模式</h2><p>单例模式、工厂模式、代理模式、模板方法模式</p>
+<h2 id="2、你在设计一个工厂的包的时候会遵循哪些原则？"><a href="#2、你在设计一个工厂的包的时候会遵循哪些原则？" class="headerlink" title="2、你在设计一个工厂的包的时候会遵循哪些原则？"></a>2、你在设计一个工厂的包的时候会遵循哪些原则？</h2><p>设计模式的六大原则</p>
+<p>1、开闭原则（Open Close Principle）</p>
+<p>开闭原则就是说对扩展开放，对修改关闭。在程序需要进行拓展的时候，不能去修改原有的代码，实现一个热插拔的效果。所以一句话概括就是：为了使程序的扩展性好，易于维护和升级。想要达到这样的效果，我们需要使用接口和抽象类，后面的具体设计中我们会提到这点。</p>
+<p>2、里氏代换原则（Liskov Substitution Principle）</p>
+<p>里氏代换原则(Liskov Substitution Principle LSP)面向对象设计的基本原则之一。 里氏代换原则中说，任何基类可以出现的地方，子类一定可以出现。 LSP是继承复用的基石，只有当衍生类可以替换掉基类，软件单位的功能不受到影响时，基类才能真正被复用，而衍生类也能够在基类的基础上增加新的行为。里氏代换原则是对“开-闭”原则的补充。实现“开-闭”原则的关键步骤就是抽象化。而基类与子类的继承关系就是抽象化的具体实现，所以里氏代换原则是对实现抽象化的具体步骤的规范。—— From Baidu 百科</p>
+<p>3、依赖倒转原则（Dependence Inversion Principle）</p>
+<p>这个是开闭原则的基础，具体内容：面对接口编程，依赖于抽象而不依赖于具体。</p>
+<p>4、接口隔离原则（Interface Segregation Principle）</p>
+<p>这个原则的意思是：使用多个隔离的接口，比使用单个接口要好。还是一个降低类之间的耦合度的意思，从这儿我们看出，其实设计模式就是一个软件的设计思想，从大型软件架构出发，为了升级和维护方便。所以上文中多次出现：降低依赖，降低耦合。</p>
+<p>5、迪米特法则（最少知道原则）（Demeter Principle）</p>
+<p>为什么叫最少知道原则，就是说：一个实体应当尽量少的与其他实体之间发生相互作用，使得系统功能模块相对独立。</p>
+<p>6、合成复用原则（Composite Reuse Principle）</p>
+<p>原则是尽量使用合成/聚合的方式，而不是使用继承</p>
+<h2 id="3、你能列举一个使用了Visitor-Decorator模式的开源项目-库吗？"><a href="#3、你能列举一个使用了Visitor-Decorator模式的开源项目-库吗？" class="headerlink" title="3、你能列举一个使用了Visitor/Decorator模式的开源项目/库吗？"></a>3、你能列举一个使用了Visitor/Decorator模式的开源项目/库吗？</h2><h2 id="4、你在编码时最常用的设计模式有哪些？在什么场景下用？"><a href="#4、你在编码时最常用的设计模式有哪些？在什么场景下用？" class="headerlink" title="4、你在编码时最常用的设计模式有哪些？在什么场景下用？"></a>4、你在编码时最常用的设计模式有哪些？在什么场景下用？</h2><p>单例模式：工程中只需要类的一个实例。</p>
+<p>工厂模式：大量的对象需要创建，并且具有相同的接口时。</p>
+<h2 id="5、如何实现一个单例？"><a href="#5、如何实现一个单例？" class="headerlink" title="5、如何实现一个单例？"></a>5、如何实现一个单例？</h2><figure class="highlight smali"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">public class Singleton &#123;</div><div class="line"> <span class="keyword"> private</span> Singleton() &#123;&#125;</div><div class="line"></div><div class="line"> <span class="keyword"> private</span><span class="keyword"> static</span><span class="keyword"> final</span> Singleton<span class="built_in"> instance </span>=<span class="built_in"> new </span>Singleton();</div><div class="line"></div><div class="line">  //饿汉式</div><div class="line"> <span class="keyword"> public</span><span class="keyword"> static</span> Singleton getInstance() &#123;</div><div class="line">   <span class="built_in"> return </span>instance;</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"><span class="keyword"></span></div><div class="line">public class Singleton &#123;</div><div class="line"> <span class="keyword"> private</span> Singleton() &#123;&#125;</div><div class="line"></div><div class="line"> <span class="keyword"> private</span><span class="keyword"> static</span> Singleton instance;</div><div class="line"></div><div class="line">  //懒汉式</div><div class="line"> <span class="keyword"> public</span><span class="keyword"> static</span> Singleton getInstance() &#123;</div><div class="line">   <span class="built_in"> if </span>(instance == null) &#123;</div><div class="line">     <span class="built_in"> instance </span>=<span class="built_in"> new </span>Singleton();</div><div class="line">    &#125;</div><div class="line">   <span class="built_in"> return </span>instance;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="6、代理模式（动态代理）"><a href="#6、代理模式（动态代理）" class="headerlink" title="6、代理模式（动态代理）"></a>6、代理模式（动态代理）</h2><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DynamicProxyHandler</span> <span class="keyword">implements</span> <span class="title">InvocationHandler</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> Object tar;</div><div class="line"></div><div class="line">    <span class="comment">//绑定委托对象，并返回代理类</span></div><div class="line">    <span class="keyword">public</span> <span class="function">Object <span class="title">bind</span><span class="params">(Object tar)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.tar = tar;</div><div class="line">        <span class="comment">//绑定该类实现的所有接口，取得代理类</span></div><div class="line">        <span class="keyword">return</span> Proxy.newProxyInstance(tar.getClass().getClassLoader(),</div><div class="line">                tar.getClass().getInterfaces(),</div><div class="line">                <span class="keyword">this</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">public</span> <span class="function">Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> Throwable </span>&#123;</div><div class="line">        <span class="keyword">before</span>();</div><div class="line"></div><div class="line">        Object result = method.invoke(tar, args);</div><div class="line"></div><div class="line">        <span class="keyword">after</span>();</div><div class="line">        <span class="keyword">return</span> result;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">void</span> <span class="title">after</span><span class="params">()</span> </span>&#123;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">void</span> <span class="title">before</span><span class="params">()</span> </span>&#123;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="7、单例模式（懒汉模式，并发初始化如何解决，volatile与lock的使用）"><a href="#7、单例模式（懒汉模式，并发初始化如何解决，volatile与lock的使用）" class="headerlink" title="7、单例模式（懒汉模式，并发初始化如何解决，volatile与lock的使用）"></a>7、单例模式（懒汉模式，并发初始化如何解决，volatile与lock的使用）</h2><figure class="highlight smali"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">public class Singleton &#123;</div><div class="line"> <span class="keyword"> private</span> Singleton() &#123;&#125;</div><div class="line"></div><div class="line"><span class="keyword">	private</span><span class="keyword"> static</span> volatile Singleton instance;</div><div class="line"></div><div class="line">  //懒汉式 线程安全</div><div class="line"> <span class="keyword"> public</span><span class="keyword"> static</span> Singleton getInstance() &#123;</div><div class="line"></div><div class="line">   <span class="built_in"> if </span>(instance == null) &#123;</div><div class="line">      synchronize (Singleton.class) &#123;</div><div class="line">       <span class="built_in"> if </span>(instance == null) &#123;</div><div class="line">         <span class="built_in"> instance </span>=<span class="built_in"> new </span>Singleton();</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">   <span class="built_in"> return </span>instance;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="8、JDK源码里面都有些什么让你印象深刻的设计模式使用，举例看看？"><a href="#8、JDK源码里面都有些什么让你印象深刻的设计模式使用，举例看看？" class="headerlink" title="8、JDK源码里面都有些什么让你印象深刻的设计模式使用，举例看看？"></a>8、JDK源码里面都有些什么让你印象深刻的设计模式使用，举例看看？</h2><p><a href="http://blog.csdn.net/baiye_xing/article/details/76427717" target="_blank" rel="external">【设计模式】JDK源码中用到的设计模式</a></p>
+<p>迭代器模式：集合的遍历</p>
+<p>工厂模式：java.util.Calendar#getInstance()</p>
+<p>适配器模式：java.util.Arrays#asList()</p>
+<h2 id="9、设计模式UML类图与设计模式实现"><a href="#9、设计模式UML类图与设计模式实现" class="headerlink" title="9、设计模式UML类图与设计模式实现"></a>9、设计模式UML类图与设计模式实现</h2><p><a href="https://www.cnblogs.com/kanhaiba/p/5568594.html" target="_blank" rel="external">java设计模式–UML类图</a></p>
+<p><a href="http://www.cnblogs.com/maowang1991/archive/2013/04/15/3023236.html" target="_blank" rel="external">Java开发中的23种设计模式详解</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      成为Java顶尖程序员，先过了下面问题！
+    
+    </summary>
+    
+    
+      <category term="Java" scheme="http://blog.yk95.top/tags/Java/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Java实现Redis、Zookeeper分布式锁</title>
+    <link href="http://blog.yk95.top/2018/01/12/Java%E5%AE%9E%E7%8E%B0Redis%E3%80%81Zookeeper%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/"/>
+    <id>http://blog.yk95.top/2018/01/12/Java实现Redis、Zookeeper分布式锁/</id>
+    <published>2018-01-11T16:00:00.000Z</published>
+    <updated>2019-01-31T06:13:53.906Z</updated>
+    
+    <content type="html"><![CDATA[<p>在单机环境下，使用volatile、synchronized关键字或者Jdk的各种并发API可以实现线程安全，<br>但是这些在分布式环境下是无法保证线程安全的，所以在分布式环境下需要使用到分布式锁，分布<br>式锁的实现目前有多种方案，可以使用数据库悲观、乐观锁，Redis、Memcached、Zookeeper分布<br>式锁，下面分享Redis、Zookeeper分布式锁的实现代码。</p>
+<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><h1 id="1、Reids分布式锁"><a href="#1、Reids分布式锁" class="headerlink" title="1、Reids分布式锁"></a>1、Reids分布式锁</h1><figure class="highlight processing"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> class RedisLock implements Lock &#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Logger logger = LoggerFactory.getLogger(getClass());</div><div class="line"></div><div class="line">    <span class="keyword">private</span> ShardedJedisPool shardedJedisPool;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 锁ID</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">String</span> lockId;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 锁命名空间</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">String</span> lockNameSpace;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 锁key值</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">String</span> lockKey;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 锁超时时间，防止线程在入锁以后，无限的执行等待，默认30秒</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> EXPIRE_SECS = <span class="number">30</span>;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 随机等待时间最小值</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="built_in">int</span> MIN_RANDOM_SECS = <span class="number">10</span>;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 随机等待时间最大值</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="built_in">int</span> MAX_RANDOM_SECS = <span class="number">300</span>;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 是否持有锁</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="built_in">boolean</span> locked = <span class="keyword">false</span>;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="keyword">public</span> RedisLock(ShardedJedisPool shardedJedisPool, <span class="keyword">String</span> lockNameSpace, <span class="keyword">String</span> lockKey) &#123;</div><div class="line">        <span class="keyword">this</span>.lockId = UUID.randomUUID().toString();</div><div class="line">        <span class="keyword">this</span>.shardedJedisPool = shardedJedisPool;</div><div class="line">        <span class="keyword">this</span>.lockNameSpace = lockNameSpace + <span class="string">":"</span>;</div><div class="line">        <span class="keyword">this</span>.lockKey = lockKey;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    <span class="keyword">public</span> <span class="keyword">void</span> lock() &#123;</div><div class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.tryLock()) &#123;</div><div class="line">            <span class="keyword">return</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"未能拿到锁"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    <span class="keyword">public</span> <span class="keyword">void</span> lockInterruptibly() <span class="keyword">throws</span> InterruptedException &#123;</div><div class="line">        <span class="keyword">this</span>.lock();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    <span class="keyword">public</span> <span class="built_in">boolean</span> tryLock() &#123;</div><div class="line">        <span class="keyword">String</span> lock = lockNameSpace + lockKey;</div><div class="line">        <span class="keyword">if</span> (setNxAndExpire(lock, lockId, EXPIRE_SECS)) &#123;</div><div class="line">            <span class="comment">// 获得锁</span></div><div class="line">            locked = <span class="keyword">true</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> locked;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Redis分布式锁</div><div class="line">     * 实现思路：</div><div class="line">     * 使用了redis的set nx expire命令，缓存锁</div><div class="line">     * 执行过程：</div><div class="line">     * 通过setNx尝试设置某个key的值，成功（当前没有这个锁）则返回，成功获得锁</div><div class="line">     * 失败，则等待，继续尝试获取锁，如等待超时，返回（未获得锁）</div><div class="line">     *</div><div class="line">     * @param time 锁等待时间</div><div class="line">     * @return</div><div class="line">     * @throws InterruptedException</div><div class="line">     */</div><div class="line">    @Override</div><div class="line">    <span class="keyword">public</span> <span class="built_in">boolean</span> tryLock(<span class="keyword">long</span> time, TimeUnit unit) <span class="keyword">throws</span> InterruptedException &#123;</div><div class="line">        <span class="keyword">String</span> lock = lockNameSpace + lockKey;</div><div class="line">        <span class="keyword">long</span> timeout = unit.toMillis(time);</div><div class="line">        <span class="keyword">while</span> (timeout &gt;= <span class="number">0</span>) &#123;</div><div class="line">            <span class="keyword">if</span> (setNxAndExpire(lock, lockId, EXPIRE_SECS)) &#123;</div><div class="line">                <span class="comment">// 获得锁</span></div><div class="line">                locked = <span class="keyword">true</span>;</div><div class="line">                <span class="keyword">return</span> locked;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="comment">// 生成[10-200]区间的随机毫秒</span></div><div class="line">            <span class="keyword">long</span> delayMills = generateRandomMills(MIN_RANDOM_SECS, MAX_RANDOM_SECS);</div><div class="line">            timeout -= delayMills;</div><div class="line">            logger.debug(<span class="string">"等待锁，锁ID：&#123;&#125;，锁值：&#123;&#125;，等待时长：&#123;&#125;ms"</span>, lockId, lock, delayMills);</div><div class="line">            <span class="comment">/*</span></div><div class="line">                延迟随机毫秒,防止饥饿进程的出现,即,当同时到达多个进程,只会有一个进程获得锁,其他的都用同样的频率进行尝试,</div><div class="line">                后面有来了一些进行,也以同样的频率申请锁,这将可能导致前面来的锁得不到满足.</div><div class="line">                使用随机的等待时间可以一定程度上保证公平性</div><div class="line">             */</div><div class="line">            Thread.sleep(delayMills);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">return</span> locked;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 释放锁</div><div class="line">     */</div><div class="line">    <span class="keyword">public</span> <span class="keyword">void</span> unlock() &#123;</div><div class="line">        <span class="keyword">if</span> (locked) &#123;</div><div class="line">            <span class="keyword">String</span> lock = lockNameSpace + lockKey;</div><div class="line">            ShardedJedis shardedJedis = shardedJedisPool.getResource();</div><div class="line">            <span class="comment">//避免删除非自己获取得到的锁</span></div><div class="line">            <span class="keyword">if</span> (lockId.equals(shardedJedis.<span class="built_in">get</span>(lock))) &#123;</div><div class="line">                shardedJedis.del(lock);</div><div class="line">            &#125;</div><div class="line">            shardedJedis.close();</div><div class="line">            locked = <span class="keyword">false</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    <span class="keyword">public</span> Condition newCondition() &#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 生成[min - max]区间的随机毫秒</div><div class="line">     *</div><div class="line">     * @param min</div><div class="line">     * @param max</div><div class="line">     * @return</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">long</span> generateRandomMills(<span class="built_in">int</span> <span class="built_in">min</span>, <span class="built_in">int</span> <span class="built_in">max</span>) &#123;</div><div class="line">        Random <span class="built_in">random</span> = <span class="keyword">new</span> Random();</div><div class="line">        <span class="comment">// randNumber 将被赋值为一个 MIN 和 MAX 范围内的随机数</span></div><div class="line">        <span class="keyword">return</span> <span class="built_in">random</span>.nextInt(<span class="built_in">max</span> - <span class="built_in">min</span> + <span class="number">1</span>) + <span class="built_in">min</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * setNX命令不支持expire，所以使用set命令，同时使用nx与expire</div><div class="line">     *</div><div class="line">     * @param key</div><div class="line">     * @param value</div><div class="line">     * @param expire 毫秒</div><div class="line">     * @return</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="built_in">boolean</span> setNxAndExpire(<span class="keyword">final</span> <span class="keyword">String</span> <span class="built_in">key</span>, <span class="keyword">final</span> <span class="keyword">String</span> value, <span class="keyword">final</span> <span class="keyword">long</span> expire) &#123;</div><div class="line">        ShardedJedis shardedJedis = shardedJedisPool.getResource();</div><div class="line">        <span class="keyword">String</span> result = shardedJedis.<span class="built_in">set</span>(<span class="built_in">key</span>, value, <span class="string">"NX"</span>, <span class="string">"PX"</span>, expire);</div><div class="line">        shardedJedis.close();</div><div class="line">        <span class="keyword">return</span> <span class="string">"OK"</span>.equals(result);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>看的网上很多redis分布式实现都是使用setNx命令再expire，其实redis已经支持一个命令直接<br>setNx并且给上expire，这个建议直接使用Jedis，Spring封装的RedisTemplate中并没有找到<br>setNx并同时给上expire的方法</p>
+<p>2019.01.31更新：通过RedisTemplate.execute()方法实现setNxAndExpire，具体可见源码 <a href="#3、最后">3、最后</a></p>
+<h1 id="2、Zookeeper分布式锁"><a href="#2、Zookeeper分布式锁" class="headerlink" title="2、Zookeeper分布式锁"></a>2、Zookeeper分布式锁</h1><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ZookeeperLock</span> <span class="keyword">implements</span> <span class="title">Lock</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Logger logger = LoggerFactory.getLogger(getClass());</div><div class="line"></div><div class="line">    <span class="keyword">private</span> ZooKeeper zooKeeper;</div><div class="line">    <span class="comment">//锁根节点</span></div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String lockNamespace;</div><div class="line">    <span class="comment">//锁值节点</span></div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String lockKey;</div><div class="line">    <span class="comment">//当前节点</span></div><div class="line">    <span class="keyword">private</span> String currentNode;</div><div class="line">    <span class="comment">//等待的前一个节点</span></div><div class="line">    <span class="keyword">private</span> String waitNode;</div><div class="line">    <span class="comment">//竞争的节点列表</span></div><div class="line">    <span class="keyword">private</span> List&lt;String&gt; lockNodes;</div><div class="line"></div><div class="line">    <span class="comment">//计数器</span></div><div class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> CountDownLatch countDownLatch;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 是否持有锁</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">boolean</span> locked = <span class="keyword">false</span>;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ZookeeperLock</span><span class="params">(String address, <span class="keyword">int</span> timeout, String lockNamespace, String lockKey)</span> </span>&#123;</div><div class="line">        init(address, timeout);</div><div class="line">        <span class="keyword">this</span>.lockNamespace = <span class="string">"/"</span> + lockNamespace;</div><div class="line">        <span class="keyword">this</span>.lockKey = lockKey + <span class="string">"_"</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">(String address, <span class="keyword">int</span> timeout)</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            zooKeeper = <span class="keyword">new</span> ZooKeeper(address, timeout, watchedEvent -&gt;</div><div class="line">                    logger.debug(<span class="string">"Zookeeper连接已建立..."</span>)</div><div class="line">            );</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">            logger.<span class="keyword">error</span>(e.getMessage(), e);</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(e.getMessage(), e);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">void</span> <span class="title">lock</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.tryLock()) &#123;</div><div class="line">            <span class="keyword">return</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"未能拿到锁"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">void</span> <span class="title">lockInterruptibly</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">        <span class="keyword">this</span>.lock();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">boolean</span> <span class="title">tryLock</span><span class="params">()</span> </span>&#123;</div><div class="line">        String lock = lockNamespace + <span class="string">"/"</span> + lockKey;</div><div class="line"></div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="comment">//确保zookeeper连接成功</span></div><div class="line">            ensureZookeeperConnect();</div><div class="line">            <span class="comment">//确保根节点存在</span></div><div class="line">            ensureNameSpaceExist(lockNamespace);</div><div class="line"></div><div class="line">            <span class="comment">//创建临时有序节点</span></div><div class="line">            <span class="comment">//节点目录为/xx/xx，节点为lockKey_xxx</span></div><div class="line">            <span class="comment">//currentNode值为lockKey_xxx</span></div><div class="line">            currentNode = zooKeeper.create(lock, <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">0</span>],</div><div class="line">                    ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL).replace(lockNamespace + <span class="string">"/"</span>, <span class="string">""</span>);</div><div class="line"></div><div class="line">            <span class="comment">//取出所有子节点</span></div><div class="line">            List&lt;String&gt; childrenList = zooKeeper.getChildren(lockNamespace, <span class="keyword">false</span>);</div><div class="line">            <span class="comment">//竞争的节点列表</span></div><div class="line">            lockNodes = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">            <span class="keyword">for</span> (String children : childrenList) &#123;</div><div class="line">                <span class="keyword">if</span> (children.startsWith(lockKey)) &#123;</div><div class="line">                    lockNodes.add(children);</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            <span class="comment">//排序</span></div><div class="line">            Collections.sort(lockNodes);</div><div class="line">            <span class="comment">//如当前节点为最小节点，则成功获取锁</span></div><div class="line">            <span class="keyword">if</span> (currentNode.equals(lockNodes.get(<span class="number">0</span>))) &#123;</div><div class="line">                locked = <span class="keyword">true</span>;</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">return</span> locked;</div><div class="line">        &#125; <span class="keyword">catch</span> (InterruptedException | KeeperException e) &#123;</div><div class="line">            logger.<span class="keyword">error</span>(e.getMessage(), e);</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(e);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Zookeeper分布式锁</div><div class="line">     * 实现思路：</div><div class="line">     * 使用Zookeeper最小节点的方式</div><div class="line">     * 执行过程：</div><div class="line">     * 1、创建根节点，在根节点下创建顺序节点</div><div class="line">     * 2、如当前创建的节点为根节点的所有子节点中最小的，则获取锁成功；</div><div class="line">     * 否则，找到当前节点的前一个节点，watch前一个节点，当前一个节点被删除时获得锁；另外，等待超时也不能获得锁</div><div class="line">     */</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">boolean</span> <span class="title">tryLock</span><span class="params">(<span class="keyword">long</span> time, TimeUnit unit)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">        <span class="comment">//等待锁</span></div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="keyword">if</span> (tryLock()) &#123;</div><div class="line">                <span class="keyword">return</span> locked;</div><div class="line">            &#125;</div><div class="line">            <span class="comment">//找到当前节点的前一个节点</span></div><div class="line">            waitNode = lockNodes.get(Collections.binarySearch(lockNodes, currentNode) - <span class="number">1</span>);</div><div class="line">            waitLock(time, unit);</div><div class="line">            <span class="keyword">return</span> locked;</div><div class="line">        &#125; <span class="keyword">catch</span> (KeeperException e) &#123;</div><div class="line">            logger.<span class="keyword">error</span>(e.getMessage(), e);</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(e);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 释放锁</div><div class="line">     */</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">void</span> <span class="title">unlock</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            zooKeeper.delete(lockNamespace + <span class="string">"/"</span> + currentNode, <span class="number">-1</span>);</div><div class="line">            zooKeeper.close();</div><div class="line">            locked = <span class="keyword">false</span>;</div><div class="line">        &#125; <span class="keyword">catch</span> (InterruptedException | KeeperException e) &#123;</div><div class="line">            logger.<span class="keyword">error</span>(e.getMessage(), e);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="keyword">public</span> <span class="function">Condition <span class="title">newCondition</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 等待锁</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">void</span> <span class="title">waitLock</span><span class="params">(<span class="keyword">long</span> time, TimeUnit unit)</span> <span class="keyword">throws</span> KeeperException, InterruptedException </span>&#123;</div><div class="line">        String waitLock = lockNamespace + <span class="string">"/"</span> + waitNode;</div><div class="line">        logger.debug(<span class="string">"等待锁 &#123;&#125; 释放"</span>, waitLock);</div><div class="line"></div><div class="line">        Stat stat = zooKeeper.exists(waitLock, watchedEvent -&gt; &#123;</div><div class="line">            <span class="keyword">if</span> (countDownLatch != <span class="keyword">null</span>) &#123;</div><div class="line">                locked = <span class="keyword">true</span>;</div><div class="line">                countDownLatch.countDown();</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line"></div><div class="line">        <span class="comment">//前一个节点此刻存在，等待，节点消失则成功获取锁</span></div><div class="line">        <span class="keyword">if</span> (stat != <span class="keyword">null</span>) &#123;</div><div class="line">            countDownLatch = <span class="keyword">new</span> CountDownLatch(<span class="number">1</span>);</div><div class="line">            countDownLatch.await(time, unit);</div><div class="line">            countDownLatch = <span class="keyword">null</span>;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            <span class="comment">//前一个节点此刻不存在，获得锁</span></div><div class="line">            locked = <span class="keyword">true</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 确保根节点存在</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">void</span> <span class="title">ensureNameSpaceExist</span><span class="params">(String lockNamespace)</span> <span class="keyword">throws</span> KeeperException, InterruptedException </span>&#123;</div><div class="line">        Stat statS = zooKeeper.exists(lockNamespace, <span class="keyword">false</span>);</div><div class="line">        <span class="keyword">if</span> (statS == <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="comment">//如果根节点不存在，创建</span></div><div class="line">            zooKeeper.create(lockNamespace, <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">0</span>], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 确保zookeeper连接成功，防止出现连接还未完成就执行zookeeper的get/create/exsit操作出现错误KeeperErrorCode = ConnectionLoss</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">void</span> <span class="title">ensureZookeeperConnect</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">        CountDownLatch connectedLatch = <span class="keyword">new</span> CountDownLatch(<span class="number">1</span>);</div><div class="line">        zooKeeper.register(watchedEvent -&gt; &#123;</div><div class="line">            <span class="keyword">if</span> (watchedEvent.getState() == Watcher.Event.KeeperState.SyncConnected) &#123;</div><div class="line">                connectedLatch.countDown();</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">        <span class="comment">//zookeeper连接中则等待</span></div><div class="line">        <span class="keyword">if</span> (ZooKeeper.States.CONNECTING == zooKeeper.getState()) &#123;</div><div class="line">            connectedLatch.await();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h1 id="3、最后"><a href="#3、最后" class="headerlink" title="3、最后"></a>3、最后</h1><p>另外推荐Redis、Zookeeper分布式锁的第三方实现Redisson、Curator锁。</p>
+<p><a href="https://github.com/vickze/vickze-lock" target="_blank" rel="external">完整代码（包括单元测试以及Redisson、Curator锁的使用）</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      Java实现Redis、Zookeeper分布式锁
+    
+    </summary>
+    
+    
+      <category term="Redis" scheme="http://blog.yk95.top/tags/Redis/"/>
+    
+      <category term="Java" scheme="http://blog.yk95.top/tags/Java/"/>
+    
+      <category term="ZooKeeper" scheme="http://blog.yk95.top/tags/ZooKeeper/"/>
+    
+      <category term="分布式锁" scheme="http://blog.yk95.top/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>使用Hexo搭建个人Github博客</title>
+    <link href="http://blog.yk95.top/2017/05/30/%E4%BD%BF%E7%94%A8Hexo%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BAGithub%E5%8D%9A%E5%AE%A2/"/>
+    <id>http://blog.yk95.top/2017/05/30/使用Hexo搭建个人Github博客/</id>
+    <published>2017-05-29T16:00:00.000Z</published>
+    <updated>2018-01-30T12:42:54.520Z</updated>
+    
+    <content type="html"><![CDATA[<p>参考网上的文章总算把自己的Github博客搭建出来了，在这把我的搭建步骤分享给大家，后面的内容还包括了配置域名，如已搭建成功了想要使用自己的域名访问博客可以直接跳到配置域名部分。<br><a href="http://www.jianshu.com/p/189fd945f38f" target="_blank" rel="external">搭建个人博客-hexo+github详细完整步骤</a><br><a href="http://blog.csdn.net/jzooo/article/details/46781805" target="_blank" rel="external">零基础免费搭建个人博客-hexo+github</a><br>上面两个链接是我所参考的文章，写的也很详细，如果没看懂我的步骤也可以看看上面的。</p>
+<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><h1 id="一、准备"><a href="#一、准备" class="headerlink" title="一、准备"></a>一、准备</h1><p>我们需要安装Git、Node.js、Hexo以及注册一个GitHub账号。<br>下载Git、Nodejs可以选择在官网下载，也可以去CSDN下载，大部分都是不需要积分的。PS：官网下载网速超级慢，不知道是资源问题还是墙的原因。<br><a href="https://git-for-windows.github.io/" target="_blank" rel="external">Git官网下载地址</a><br><a href="https://nodejs.org/en/" target="_blank" rel="external">Node.js官网下载地址</a><br><a href="http://download.csdn.net/search/0/10/0/2/1/Git%202.13.0" target="_blank" rel="external">Git CSDN下载</a><br><a href="http://download.csdn.net/search/0/10/0/2/1/Node.js%20v6.10.3" target="_blank" rel="external">Node.js CSDN下载</a></p>
+<h2 id="1、安装Git"><a href="#1、安装Git" class="headerlink" title="1、安装Git"></a>1、安装Git</h2><p><img src="/static/img/2017-5-25_22-21-15.png" alt=""></p>
+<p>打开Git安装程序，点击NEXT来到这个页面，选择要安装的组件，可以全选也可以默认，然后一路NEXT即可，安装路径根据自己习惯更改。</p>
+<h2 id="2、安装Node-js"><a href="#2、安装Node-js" class="headerlink" title="2、安装Node.js"></a>2、安装Node.js</h2><p><img src="/static/img/2017-5-25_22-33-36.png" alt=""><br>同样打开Node.js安装程序，一路默认即可，安装路径根据自己习惯更改。</p>
+<h2 id="3、安装Hexo"><a href="#3、安装Hexo" class="headerlink" title="3、安装Hexo"></a>3、安装Hexo</h2><p>安装Hexo就稍微繁琐点，不过大家一定不能急，耐心等待安装，一般来说按照步骤慢慢来都是没有问题的。<br>首先在任意地方右键，点击“Git Bash Here”。<br><img src="/static/img/2017-5-25_22-38-12.png" alt=""><br>使用NPM命令安装，为防止被墙，这里使用淘宝NPM镜像，输入命令 <code>npm install -g cnpm --registry=https://registry.npm.taobao.org</code> 等待安装完成。</p>
+<p><img src="/static/img/2017-5-22_21-28-49.png" alt=""><br>完成后，继续输入命令 <code>cnpm install -g hexo-cli</code></p>
+<p><img src="/static/img/2017-5-22_21-29-39.png" alt=""></p>
+<p>等待完成，再输入命令 <code>cnpm install hexo --save</code></p>
+<p><img src="/static/img/2017-5-22_21-29-57.png" alt=""></p>
+<p>至此Hexo安装完成，使用查看版本命令 <code>hexo -v</code> 检查是否正常安装。</p>
+<p><img src="/static/img/2017-5-22_21-30-53.png" alt=""></p>
+<h2 id="4、注册Github以及创建仓库"><a href="#4、注册Github以及创建仓库" class="headerlink" title="4、注册Github以及创建仓库"></a>4、注册Github以及创建仓库</h2><p>接下来我们注册Github账号，使用常用邮箱注册即可，过程比较简单这里就不细讲了。<br>注册成功登录后，来到我的仓库页面，点击New repository。</p>
+<p><img src="/static/img/2017-5-27_22-31-44.png" alt=""></p>
+<p>注意Repository name一定得是yourname.github.io，这样才能使用这个地址访问到你的Github page，填好Repository name，点击Create repository。（我这里因为之前创建过，所以报同名错误，大家第一次创建的话可以忽略）。</p>
+<p><img src="/static/img/2017-5-27_22-37-26.png" alt=""></p>
+<p>在<a href="http://blog.csdn.net/jzooo/article/details/46781805" target="_blank" rel="external">零基础免费搭建个人博客-hexo+github</a>里有个‘启用GitHub Page’的步骤，但我发现页面都已经变得不一样了，最新的页面如下所示，只需要Choose Theme就会自动启用Github Page。</p>
+<p><img src="/static/img/2017-5-27_23-46-36.png" alt=""></p>
+<p>创建仓库后我们后面的步骤需要用到仓库地址，进到yourname.github.io仓库页面，看下图。</p>
+<p><img src="/static/img/2017-5-27_22-53-59.png" alt=""></p>
+<h1 id="二、本地启动与部署到Github"><a href="#二、本地启动与部署到Github" class="headerlink" title="二、本地启动与部署到Github"></a>二、本地启动与部署到Github</h1><h2 id="1、本地启动"><a href="#1、本地启动" class="headerlink" title="1、本地启动"></a>1、本地启动</h2><p>创建一个新文件夹（我的是在E盘创建的Blog），进入该文件夹，右键Git Bash Here，输入 <code>hexo init</code> 命令。PS：由于博主搭建成功后并没有推倒再来一遍，所以到这里就没有截图了，大家键入命令后，在程序运行过程记得一定要耐心等待。</p>
+<p>初始化成功后，大概是下面的目录结构（我这个是部署到git后，有多了几个文件）。</p>
+<p><img src="/static/img/2017-5-27_23-8-46.png" alt=""></p>
+<p>接下来输入 <code>hexo s -g</code> 命令启动，启动后浏览器访问localhost:4000查看博客效果。</p>
+<h2 id="2、部署到Github"><a href="#2、部署到Github" class="headerlink" title="2、部署到Github"></a>2、部署到Github</h2><p>本地成功后下面就要部署到Git了，打开_config.yml进行配置，如下图，复制你的仓库地址给repo参数(上面有讲怎么复制）。</p>
+<p><img src="/static/img/2017-5-27_23-21-41.png" alt=""></p>
+<p>在Git命令窗口输入 <code>npm install hexo-deployer-git  --save</code> 安装hexo-deployer-git自动部署发布工具，等待安装完成，输入 <code>hexo clean &amp;&amp; hexo g &amp;&amp; hexo d</code> 命令发布到Github，这里注意第一次发布的话会需要输入你的Github账号跟密码，等待出现下图的信息就说明发布成功了，在浏览器输入yourname.github.io就可以看到你的博客了。</p>
+<p><img src="/static/img/2017-5-27_23-33-28.png" alt=""></p>
+<h1 id="三、选择主题与配置域名"><a href="#三、选择主题与配置域名" class="headerlink" title="三、选择主题与配置域名"></a>三、选择主题与配置域名</h1><h2 id="1、选择主题"><a href="#1、选择主题" class="headerlink" title="1、选择主题"></a>1、选择主题</h2><p>完成上面的步骤之后呢，可能有人会觉得默认的Hexo主题不是特别好看（至少博主是那么认为的），所以我们可以给博客选择一个适合自己的主题，使用命令 <code>git clone https://github.com/iissnan/hexo-theme-nextthemes/[theme]</code> 来下载一个新的主题，[theme]为主题名。下载完成后，修改_config.yml的theme参数来配置主题，见下图。</p>
+<p><img src="/static/img/2017-5-29_16-24-31.png" alt=""></p>
+<p>附上链接：<a href="https://www.zhihu.com/question/24422335" target="_blank" rel="external">有哪些好看的 Hexo 主题？</a></p>
+<p>博主选择的主题是yilia，这里遇到了一个坑：使用yilia主题有了两个_config.yml文件，一个是我们一直用到的，另一个是yilia主题目录下的，启用yilia的某些功能需要在我们一直用到的_config.yml文件配置，而yilia主题的定制是在yilia目录下的_config.yml配置，其他主题可能也会有这样的情况，这一点稍微注意下。</p>
+<p>另附上yilia主题的评论配置：<a href="https://github.com/litten/hexo-theme-yilia/wiki/%E5%A4%9A%E8%AF%B4%E3%80%81%E7%95%85%E8%A8%80%E3%80%81%E7%BD%91%E6%98%93%E4%BA%91%E8%B7%9F%E5%B8%96%E3%80%81Disqus%E8%AF%84%E8%AE%BA%E9%85%8D%E7%BD%AE" target="_blank" rel="external">多说、畅言、网易云跟帖、Disqus评论配置</a></p>
+<h2 id="2、配置域名"><a href="#2、配置域名" class="headerlink" title="2、配置域名"></a>2、配置域名</h2><p>这一步骤提供给需要使用自己的域名访问Github page的读者，不需要的可以直接跳过。<br>在cmd窗口使用 <code>ping yourname.github.io</code> 得到IP地址，见下图。</p>
+<p><img src="/static/img/2017-5-29_16-0-36.png" alt=""></p>
+<p>在你的Github博客仓库根目录下创建CNAME文件，注意不能有文件名不能有后缀且要大写，内容为你想指定的域名。</p>
+<p><img src="/static/img/2017-5-29_16-11-59.png" alt=""></p>
+<p>然后将你的域名映射到该IP地址，这里以博主的阿里云购买的域名举例，在阿里云域名控制台添加一条解析，如下图。</p>
+<p><img src="/static/img/2017-5-29_16-18-31.png" alt=""></p>
+<p>等解析生效就可以使用域名访问Github page了，例如博主的：<a href="http://yk95.top" target="_blank" rel="external">http://yk95.top</a></p>
+<p>使用域名访问Github page还需要注意一点，我们使用 <code>hexo clean &amp;&amp; hexo g &amp;&amp; hexo d</code> 命令将博客发布到Git时，Hexo会将整个仓库全部清空，然后才提交，这样我们创建的CNAME文件就被删除了，这里提供一个简单的解决方案，在本地博客public文件夹下创建CNAME文件，发布到Git时不clean使用 <code>hexo g &amp;&amp; hexo d</code> 命令，发布时会将CNAME文件一起提交。</p>
+<h1 id="四、发布自己的第一篇博客"><a href="#四、发布自己的第一篇博客" class="headerlink" title="四、发布自己的第一篇博客"></a>四、发布自己的第一篇博客</h1><p>将博客搭建起来之后就可以开始写博客了，首先需要配置一些基本信息，这些内容不会解析到博客正文中，见下图。</p>
+<p><img src="/static/img/2017-5-29_16-54-21.png" alt=""></p>
+<p>接下来就是正式写博客正文了，写的文章要遵循markdown语法。<br>附上链接：<a href="http://www.appinn.com/markdown/#img" target="_blank" rel="external">Markdown 语法说明 (简体中文版)</a><br>写好博客后就可以使用命令 <code>hexo clean &amp;&amp; hexo g &amp;&amp; hexo d</code> 发布到Github了（域名访问的请去掉 <code>hexo clean</code>），下面是博客效果。</p>
+<p><img src="/static/img/2017-5-29_19-55-23.png" alt=""></p>
+<p>至此，本篇博客搭建教程介绍完毕，最后再附上一些链接：<br><a href="http://www.jianshu.com/p/ab44b916a8b6" target="_blank" rel="external">Hexo博客添加百度sitemap</a><br><a href="http://hui-wang.info/2016/10/23/Hexo%E6%8F%92%E4%BB%B6%E4%B9%8B%E7%99%BE%E5%BA%A6%E4%B8%BB%E5%8A%A8%E6%8F%90%E4%BA%A4%E9%93%BE%E6%8E%A5/" target="_blank" rel="external">Hexo插件之百度主动提交链接</a><br><a href="https://ninghao.net/blog/4449" target="_blank" rel="external">用阿里云的免费 SSL 证书让网站从 HTTP 换成 HTTPS</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      使用Hexo搭建个人Github博客
+    
+    </summary>
+    
+    
+      <category term="Github" scheme="http://blog.yk95.top/tags/Github/"/>
+    
+      <category term="Hexo" scheme="http://blog.yk95.top/tags/Hexo/"/>
+    
+      <category term="博客" scheme="http://blog.yk95.top/tags/%E5%8D%9A%E5%AE%A2/"/>
+    
+  </entry>
+  
+</feed>
