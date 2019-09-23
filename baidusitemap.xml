@@ -4,13 +4,19 @@
 
     
   <url>
-    <loc>http://blog.yk95.top/2019/02/20/Mysql%E4%B8%BB%E4%BB%8E/</loc>
-    <lastmod>2019-02-20T07:04:45.978Z</lastmod>
+    <loc>http://blog.yk95.top/2019/09/23/Mysql%E4%B8%BB%E4%BB%8E/</loc>
+    <lastmod>2019-09-23T07:10:57.976Z</lastmod>
     <data>
         <display>
-        <title></title>
-        <pubTime>2019-02-20T03:06:17.552Z</pubTime>
+        <title>Docker学习-搭建Mysql主从</title>
+        <pubTime>2019-09-22T16:00:00.000Z</pubTime>
         
+        <tag>Docker</tag>
+         
+        <tag>Mysql</tag>
+         
+        <tag>主从</tag>
+         
          
            
         </display>

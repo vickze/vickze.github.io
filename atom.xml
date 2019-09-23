@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://blog.yk95.top/"/>
-  <updated>2019-02-20T07:04:45.978Z</updated>
+  <updated>2019-09-23T07:10:57.976Z</updated>
   <id>http://blog.yk95.top/</id>
   
   <author>
@@ -16,21 +16,22 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
-    <title></title>
-    <link href="http://blog.yk95.top/2019/02/20/Mysql%E4%B8%BB%E4%BB%8E/"/>
-    <id>http://blog.yk95.top/2019/02/20/Mysql主从/</id>
-    <published>2019-02-20T03:06:17.552Z</published>
-    <updated>2019-02-20T07:04:45.978Z</updated>
+    <title>Docker学习-搭建Mysql主从</title>
+    <link href="http://blog.yk95.top/2019/09/23/Mysql%E4%B8%BB%E4%BB%8E/"/>
+    <id>http://blog.yk95.top/2019/09/23/Mysql主从/</id>
+    <published>2019-09-22T16:00:00.000Z</published>
+    <updated>2019-09-23T07:10:57.976Z</updated>
     
-    <content type="html"><![CDATA[<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker cp <span class="string">mysql:</span><span class="regexp">/etc/</span>mysql <span class="regexp">/etc/</span>mysql</div></pre></td></tr></table></figure>
-<p>创建/etc/mysql/mysql_master、/etc/mysql/mysql_slave目录，将/etc/mysql中拷贝至这两个文件夹</p>
+    <content type="html"><![CDATA[<p>前提：已有一个名为mysql的容器</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker cp <span class="string">mysql:</span><span class="regexp">/etc/</span>mysql <span class="regexp">/etc/</span>mysql</div></pre></td></tr></table></figure>
+<p>创建/etc/mysql/mysql_master、/etc/mysql/mysql_slave目录，将mysql容器中的/etc/mysql中拷贝至这两个文件夹</p>
 <p>修改/etc/mysql/mysql_master/my.cnf文件，添加以下配置内容</p>
 <figure class="highlight ini"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="section">[mysqld]</span></div><div class="line"><span class="attr">log-bin</span>=mysql-bin</div><div class="line"><span class="attr">server-id</span>=<span class="number">1</span></div></pre></td></tr></table></figure>
-<p>启动mysql_master</p>
+<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><h2 id="创建主库"><a href="#创建主库" class="headerlink" title="创建主库"></a>创建主库</h2><p>启动mysql_master</p>
 <figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker <span class="keyword">run</span><span class="bash"> --name mysql_master -v /etc/mysql/mysql_master:/etc/mysql -p 3307:3306 <span class="_">-e</span> MYSQL_ROOT_PASSWORD=123456 <span class="_">-d</span> mysql</span></div></pre></td></tr></table></figure>
 <p>修改/etc/mysql/mysql_slave/my.cnf文件，添加以下配置内容</p>
 <figure class="highlight ini"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="section">[mysqld]</span></div><div class="line"><span class="attr">server-id</span>=<span class="number">2</span></div></pre></td></tr></table></figure>
-<p>启动mysql_slave</p>
+<h2 id="创建从库"><a href="#创建从库" class="headerlink" title="创建从库"></a>创建从库</h2><p>启动mysql_slave</p>
 <figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker <span class="keyword">run</span><span class="bash"> --name mysql_slave -v /etc/mysql/mysql_slave:/etc/mysql -p 3308:3306 <span class="_">-e</span> MYSQL_ROOT_PASSWORD=123456 <span class="_">-d</span> mysql</span></div></pre></td></tr></table></figure>
 <p>进入mysql_master</p>
 <figure class="highlight armasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="symbol">docker</span> exec -<span class="keyword">it </span>mysql_master <span class="keyword">bash</span></div><div class="line"></div><div class="line"><span class="symbol">mysql</span> -u root -p</div></pre></td></tr></table></figure>
@@ -41,15 +42,22 @@
 <p>CHANGE MASTER TO<br>MASTER_HOST=’192.168.244.137’,<br>MASTER_USER=’slave’,<br>MASTER_PORT=3307,<br>MASTER_PASSWORD=’123456’,<br>MASTER_LOG_FILE=’mysql-bin.000003’,<br>MASTER_LOG_POS=409;<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div></pre></td></tr></table></figure></p>
 <p>start slave;</p>
 <p>show slave status\G;<br>```</p>
+<p>出现下图说明成功</p>
 <p><img src="/static/img/mysql_slave.jpg" alt=""></p>
 ]]></content>
     
     <summary type="html">
     
-      &lt;figure class=&quot;highlight groovy&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;1&lt;/div&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;div class=&quot;li
+      Docker搭建Mysql主从
     
     </summary>
     
+    
+      <category term="Docker" scheme="http://blog.yk95.top/tags/Docker/"/>
+    
+      <category term="Mysql" scheme="http://blog.yk95.top/tags/Mysql/"/>
+    
+      <category term="主从" scheme="http://blog.yk95.top/tags/%E4%B8%BB%E4%BB%8E/"/>
     
   </entry>
   

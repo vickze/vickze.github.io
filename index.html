@@ -144,29 +144,32 @@
     <article id="post-Mysql主从" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/09/23/Mysql主从/">Docker学习-搭建Mysql主从</a>
+    </h1>
+  
+
+        
+        <a href="/2019/09/23/Mysql主从/" class="archive-article-date">
+  	<time datetime="2019-09-22T16:00:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-09-23</time>
+</a>
+        
+      </header>
+    
     <div class="article-entry" itemprop="articleBody">
       
-        <figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker cp <span class="string">mysql:</span><span class="regexp">/etc/</span>mysql <span class="regexp">/etc/</span>mysql</div></pre></td></tr></table></figure>
-<p>创建/etc/mysql/mysql_master、/etc/mysql/mysql_slave目录，将/etc/mysql中拷贝至这两个文件夹</p>
+        <p>前提：已有一个名为mysql的容器</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker cp <span class="string">mysql:</span><span class="regexp">/etc/</span>mysql <span class="regexp">/etc/</span>mysql</div></pre></td></tr></table></figure>
+<p>创建/etc/mysql/mysql_master、/etc/mysql/mysql_slave目录，将mysql容器中的/etc/mysql中拷贝至这两个文件夹</p>
 <p>修改/etc/mysql/mysql_master/my.cnf文件，添加以下配置内容</p>
 <figure class="highlight ini"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="section">[mysqld]</span></div><div class="line"><span class="attr">log-bin</span>=mysql-bin</div><div class="line"><span class="attr">server-id</span>=<span class="number">1</span></div></pre></td></tr></table></figure>
-<p>启动mysql_master</p>
-<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker <span class="keyword">run</span><span class="bash"> --name mysql_master -v /etc/mysql/mysql_master:/etc/mysql -p 3307:3306 <span class="_">-e</span> MYSQL_ROOT_PASSWORD=123456 <span class="_">-d</span> mysql</span></div></pre></td></tr></table></figure>
-<p>修改/etc/mysql/mysql_slave/my.cnf文件，添加以下配置内容</p>
-<figure class="highlight ini"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="section">[mysqld]</span></div><div class="line"><span class="attr">server-id</span>=<span class="number">2</span></div></pre></td></tr></table></figure>
-<p>启动mysql_slave</p>
-<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker <span class="keyword">run</span><span class="bash"> --name mysql_slave -v /etc/mysql/mysql_slave:/etc/mysql -p 3308:3306 <span class="_">-e</span> MYSQL_ROOT_PASSWORD=123456 <span class="_">-d</span> mysql</span></div></pre></td></tr></table></figure>
-<p>进入mysql_master</p>
-<figure class="highlight armasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="symbol">docker</span> exec -<span class="keyword">it </span>mysql_master <span class="keyword">bash</span></div><div class="line"></div><div class="line"><span class="symbol">mysql</span> -u root -p</div></pre></td></tr></table></figure>
-<p>在master节点创建一个用户slave，用于slave节点链接master节点时使用。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">USER</span> <span class="string">'slave'</span>@<span class="string">''</span> <span class="keyword">IDENTIFIED</span> <span class="keyword">WITH</span> mysql_native_password <span class="keyword">BY</span> <span class="string">'123456'</span>;</div><div class="line"></div><div class="line"><span class="keyword">GRANT</span> <span class="keyword">REPLICATION</span> <span class="keyword">SLAVE</span> <span class="keyword">ON</span> *.* <span class="keyword">TO</span> <span class="string">'slave'</span>@<span class="string">''</span>;</div></pre></td></tr></table></figure>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">SHOW</span> <span class="keyword">MASTER</span> <span class="keyword">STATUS</span>;</div></pre></td></tr></table></figure>
-<p>进入mysql_slave，执行以下命令，其中MASTER_LOG_FILE、MASTER_LOG_POS值为<figure class="highlight plain"><figcaption><span>MASTER STATUS;```显示值</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div></pre></td></tr></table></figure></p>
-<p>CHANGE MASTER TO<br>MASTER_HOST=’192.168.244.137’,<br>MASTER_USER=’slave’,<br>MASTER_PORT=3307,<br>MASTER_PASSWORD=’123456’,<br>MASTER_LOG_FILE=’mysql-bin.000003’,<br>MASTER_LOG_POS=409;<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div></pre></td></tr></table></figure></p>
-<p>start slave;</p>
-<p>show slave status\G;<br>```</p>
-<p><img src="/static/img/mysql_slave.jpg" alt=""></p>
-
+<h2 id=""><a href="#" class="headerlink" title=""></a>
+        
+          <a class="article-more-a" href="/2019/09/23/Mysql主从/#more">more >></a>
+        
       
 
       
@@ -174,11 +177,30 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Docker</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Mysql</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">主从</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2019/02/20/Mysql主从/">展开全文 >></a>
+          <a class="article-more-a" href="/2019/09/23/Mysql主从/">展开全文 >></a>
         </p>
       
 
@@ -913,6 +935,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">SpringBoot</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">主从</a>
               </li>
              
               <li class="article-tag-list-item">

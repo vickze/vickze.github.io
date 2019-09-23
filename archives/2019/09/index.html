@@ -6,19 +6,18 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://blog.yk95.top">
-  <title>Java实现Redis、Zookeeper分布式锁 | vickze&#39;blog</title>
+  <title>Archives: 2019/9 | vickze&#39;blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Java实现Redis、Zookeeper分布式锁">
-<meta name="keywords" content="Java,Redis,ZooKeeper,分布式锁">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Java实现Redis、Zookeeper分布式锁">
-<meta property="og:url" content="http://blog.yk95.top/2018/01/12/Java实现Redis、Zookeeper分布式锁/index.html">
+  <meta name="description" content="想到了在写。">
+<meta name="keywords" content="前端,js,jquery,javascript,html5,开发者,程序猿,程序媛,极客,编程,代码,开源,IT网站,Developer,Programmer,Coder,Geek,html,css,css3,用户体验">
+<meta property="og:type" content="website">
+<meta property="og:title" content="vickze&#39;blog">
+<meta property="og:url" content="http://blog.yk95.top/archives/2019/09/index.html">
 <meta property="og:site_name" content="vickze&#39;blog">
-<meta property="og:description" content="Java实现Redis、Zookeeper分布式锁">
-<meta property="og:updated_time" content="2019-01-31T06:13:53.906Z">
+<meta property="og:description" content="想到了在写。">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Java实现Redis、Zookeeper分布式锁">
-<meta name="twitter:description" content="Java实现Redis、Zookeeper分布式锁">
+<meta name="twitter:title" content="vickze&#39;blog">
+<meta name="twitter:description" content="想到了在写。">
   
     <link rel="alternative" href="/atom.xml" title="vickze&#39;blog" type="application/atom+xml">
   
@@ -140,196 +139,68 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-Java实现Redis、Zookeeper分布式锁" class="article article-type-post " itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
+            
   
-    <h1 class="article-title" itemprop="name">
-      Java实现Redis、Zookeeper分布式锁
+  
+    
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2019" class="archive-year">2019</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      	<div class="article-meta">
+	      	<a href="/2019/09/23/Mysql主从/" class="archive-article-date">
+  	<time datetime="2019-09-22T16:00:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-09-23</time>
+</a>
+        </div>
+    	 
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2019/09/23/Mysql主从/">Docker学习-搭建Mysql主从</a>
     </h1>
   
 
-        
-        <a href="/2018/01/12/Java实现Redis、Zookeeper分布式锁/" class="archive-article-date">
-  	<time datetime="2018-01-11T16:00:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-01-12</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>在单机环境下，使用volatile、synchronized关键字或者Jdk的各种并发API可以实现线程安全，<br>但是这些在分布式环境下是无法保证线程安全的，所以在分布式环境下需要使用到分布式锁，分布<br>式锁的实现目前有多种方案，可以使用数据库悲观、乐观锁，Redis、Memcached、Zookeeper分布<br>式锁，下面分享Redis、Zookeeper分布式锁的实现代码。</p>
-<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><h1 id="1、Reids分布式锁"><a href="#1、Reids分布式锁" class="headerlink" title="1、Reids分布式锁"></a>1、Reids分布式锁</h1><figure class="highlight processing"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> class RedisLock implements Lock &#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Logger logger = LoggerFactory.getLogger(getClass());</div><div class="line"></div><div class="line">    <span class="keyword">private</span> ShardedJedisPool shardedJedisPool;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 锁ID</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">String</span> lockId;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 锁命名空间</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">String</span> lockNameSpace;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 锁key值</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">String</span> lockKey;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 锁超时时间，防止线程在入锁以后，无限的执行等待，默认30秒</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> EXPIRE_SECS = <span class="number">30</span>;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 随机等待时间最小值</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="built_in">int</span> MIN_RANDOM_SECS = <span class="number">10</span>;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 随机等待时间最大值</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="built_in">int</span> MAX_RANDOM_SECS = <span class="number">300</span>;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 是否持有锁</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="built_in">boolean</span> locked = <span class="keyword">false</span>;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="keyword">public</span> RedisLock(ShardedJedisPool shardedJedisPool, <span class="keyword">String</span> lockNameSpace, <span class="keyword">String</span> lockKey) &#123;</div><div class="line">        <span class="keyword">this</span>.lockId = UUID.randomUUID().toString();</div><div class="line">        <span class="keyword">this</span>.shardedJedisPool = shardedJedisPool;</div><div class="line">        <span class="keyword">this</span>.lockNameSpace = lockNameSpace + <span class="string">":"</span>;</div><div class="line">        <span class="keyword">this</span>.lockKey = lockKey;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    <span class="keyword">public</span> <span class="keyword">void</span> lock() &#123;</div><div class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.tryLock()) &#123;</div><div class="line">            <span class="keyword">return</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"未能拿到锁"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    <span class="keyword">public</span> <span class="keyword">void</span> lockInterruptibly() <span class="keyword">throws</span> InterruptedException &#123;</div><div class="line">        <span class="keyword">this</span>.lock();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    <span class="keyword">public</span> <span class="built_in">boolean</span> tryLock() &#123;</div><div class="line">        <span class="keyword">String</span> lock = lockNameSpace + lockKey;</div><div class="line">        <span class="keyword">if</span> (setNxAndExpire(lock, lockId, EXPIRE_SECS)) &#123;</div><div class="line">            <span class="comment">// 获得锁</span></div><div class="line">            locked = <span class="keyword">true</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> locked;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Redis分布式锁</div><div class="line">     * 实现思路：</div><div class="line">     * 使用了redis的set nx expire命令，缓存锁</div><div class="line">     * 执行过程：</div><div class="line">     * 通过setNx尝试设置某个key的值，成功（当前没有这个锁）则返回，成功获得锁</div><div class="line">     * 失败，则等待，继续尝试获取锁，如等待超时，返回（未获得锁）</div><div class="line">     *</div><div class="line">     * @param time 锁等待时间</div><div class="line">     * @return</div><div class="line">     * @throws InterruptedException</div><div class="line">     */</div><div class="line">    @Override</div><div class="line">    <span class="keyword">public</span> <span class="built_in">boolean</span> tryLock(<span class="keyword">long</span> time, TimeUnit unit) <span class="keyword">throws</span> InterruptedException &#123;</div><div class="line">        <span class="keyword">String</span> lock = lockNameSpace + lockKey;</div><div class="line">        <span class="keyword">long</span> timeout = unit.toMillis(time);</div><div class="line">        <span class="keyword">while</span> (timeout &gt;= <span class="number">0</span>) &#123;</div><div class="line">            <span class="keyword">if</span> (setNxAndExpire(lock, lockId, EXPIRE_SECS)) &#123;</div><div class="line">                <span class="comment">// 获得锁</span></div><div class="line">                locked = <span class="keyword">true</span>;</div><div class="line">                <span class="keyword">return</span> locked;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="comment">// 生成[10-200]区间的随机毫秒</span></div><div class="line">            <span class="keyword">long</span> delayMills = generateRandomMills(MIN_RANDOM_SECS, MAX_RANDOM_SECS);</div><div class="line">            timeout -= delayMills;</div><div class="line">            logger.debug(<span class="string">"等待锁，锁ID：&#123;&#125;，锁值：&#123;&#125;，等待时长：&#123;&#125;ms"</span>, lockId, lock, delayMills);</div><div class="line">            <span class="comment">/*</span></div><div class="line">                延迟随机毫秒,防止饥饿进程的出现,即,当同时到达多个进程,只会有一个进程获得锁,其他的都用同样的频率进行尝试,</div><div class="line">                后面有来了一些进行,也以同样的频率申请锁,这将可能导致前面来的锁得不到满足.</div><div class="line">                使用随机的等待时间可以一定程度上保证公平性</div><div class="line">             */</div><div class="line">            Thread.sleep(delayMills);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">return</span> locked;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 释放锁</div><div class="line">     */</div><div class="line">    <span class="keyword">public</span> <span class="keyword">void</span> unlock() &#123;</div><div class="line">        <span class="keyword">if</span> (locked) &#123;</div><div class="line">            <span class="keyword">String</span> lock = lockNameSpace + lockKey;</div><div class="line">            ShardedJedis shardedJedis = shardedJedisPool.getResource();</div><div class="line">            <span class="comment">//避免删除非自己获取得到的锁</span></div><div class="line">            <span class="keyword">if</span> (lockId.equals(shardedJedis.<span class="built_in">get</span>(lock))) &#123;</div><div class="line">                shardedJedis.del(lock);</div><div class="line">            &#125;</div><div class="line">            shardedJedis.close();</div><div class="line">            locked = <span class="keyword">false</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    <span class="keyword">public</span> Condition newCondition() &#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 生成[min - max]区间的随机毫秒</div><div class="line">     *</div><div class="line">     * @param min</div><div class="line">     * @param max</div><div class="line">     * @return</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">long</span> generateRandomMills(<span class="built_in">int</span> <span class="built_in">min</span>, <span class="built_in">int</span> <span class="built_in">max</span>) &#123;</div><div class="line">        Random <span class="built_in">random</span> = <span class="keyword">new</span> Random();</div><div class="line">        <span class="comment">// randNumber 将被赋值为一个 MIN 和 MAX 范围内的随机数</span></div><div class="line">        <span class="keyword">return</span> <span class="built_in">random</span>.nextInt(<span class="built_in">max</span> - <span class="built_in">min</span> + <span class="number">1</span>) + <span class="built_in">min</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * setNX命令不支持expire，所以使用set命令，同时使用nx与expire</div><div class="line">     *</div><div class="line">     * @param key</div><div class="line">     * @param value</div><div class="line">     * @param expire 毫秒</div><div class="line">     * @return</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="built_in">boolean</span> setNxAndExpire(<span class="keyword">final</span> <span class="keyword">String</span> <span class="built_in">key</span>, <span class="keyword">final</span> <span class="keyword">String</span> value, <span class="keyword">final</span> <span class="keyword">long</span> expire) &#123;</div><div class="line">        ShardedJedis shardedJedis = shardedJedisPool.getResource();</div><div class="line">        <span class="keyword">String</span> result = shardedJedis.<span class="built_in">set</span>(<span class="built_in">key</span>, value, <span class="string">"NX"</span>, <span class="string">"PX"</span>, expire);</div><div class="line">        shardedJedis.close();</div><div class="line">        <span class="keyword">return</span> <span class="string">"OK"</span>.equals(result);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>看的网上很多redis分布式实现都是使用setNx命令再expire，其实redis已经支持一个命令直接<br>setNx并且给上expire，这个建议直接使用Jedis，Spring封装的RedisTemplate中并没有找到<br>setNx并同时给上expire的方法</p>
-<p>2019.01.31更新：通过RedisTemplate.execute()方法实现setNxAndExpire，具体可见源码 <a href="#3、最后">3、最后</a></p>
-<h1 id="2、Zookeeper分布式锁"><a href="#2、Zookeeper分布式锁" class="headerlink" title="2、Zookeeper分布式锁"></a>2、Zookeeper分布式锁</h1><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ZookeeperLock</span> <span class="keyword">implements</span> <span class="title">Lock</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Logger logger = LoggerFactory.getLogger(getClass());</div><div class="line"></div><div class="line">    <span class="keyword">private</span> ZooKeeper zooKeeper;</div><div class="line">    <span class="comment">//锁根节点</span></div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String lockNamespace;</div><div class="line">    <span class="comment">//锁值节点</span></div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String lockKey;</div><div class="line">    <span class="comment">//当前节点</span></div><div class="line">    <span class="keyword">private</span> String currentNode;</div><div class="line">    <span class="comment">//等待的前一个节点</span></div><div class="line">    <span class="keyword">private</span> String waitNode;</div><div class="line">    <span class="comment">//竞争的节点列表</span></div><div class="line">    <span class="keyword">private</span> List&lt;String&gt; lockNodes;</div><div class="line"></div><div class="line">    <span class="comment">//计数器</span></div><div class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> CountDownLatch countDownLatch;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 是否持有锁</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">boolean</span> locked = <span class="keyword">false</span>;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ZookeeperLock</span><span class="params">(String address, <span class="keyword">int</span> timeout, String lockNamespace, String lockKey)</span> </span>&#123;</div><div class="line">        init(address, timeout);</div><div class="line">        <span class="keyword">this</span>.lockNamespace = <span class="string">"/"</span> + lockNamespace;</div><div class="line">        <span class="keyword">this</span>.lockKey = lockKey + <span class="string">"_"</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">(String address, <span class="keyword">int</span> timeout)</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            zooKeeper = <span class="keyword">new</span> ZooKeeper(address, timeout, watchedEvent -&gt;</div><div class="line">                    logger.debug(<span class="string">"Zookeeper连接已建立..."</span>)</div><div class="line">            );</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">            logger.<span class="keyword">error</span>(e.getMessage(), e);</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(e.getMessage(), e);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">void</span> <span class="title">lock</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.tryLock()) &#123;</div><div class="line">            <span class="keyword">return</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"未能拿到锁"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">void</span> <span class="title">lockInterruptibly</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">        <span class="keyword">this</span>.lock();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">boolean</span> <span class="title">tryLock</span><span class="params">()</span> </span>&#123;</div><div class="line">        String lock = lockNamespace + <span class="string">"/"</span> + lockKey;</div><div class="line"></div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="comment">//确保zookeeper连接成功</span></div><div class="line">            ensureZookeeperConnect();</div><div class="line">            <span class="comment">//确保根节点存在</span></div><div class="line">            ensureNameSpaceExist(lockNamespace);</div><div class="line"></div><div class="line">            <span class="comment">//创建临时有序节点</span></div><div class="line">            <span class="comment">//节点目录为/xx/xx，节点为lockKey_xxx</span></div><div class="line">            <span class="comment">//currentNode值为lockKey_xxx</span></div><div class="line">            currentNode = zooKeeper.create(lock, <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">0</span>],</div><div class="line">                    ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL).replace(lockNamespace + <span class="string">"/"</span>, <span class="string">""</span>);</div><div class="line"></div><div class="line">            <span class="comment">//取出所有子节点</span></div><div class="line">            List&lt;String&gt; childrenList = zooKeeper.getChildren(lockNamespace, <span class="keyword">false</span>);</div><div class="line">            <span class="comment">//竞争的节点列表</span></div><div class="line">            lockNodes = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">            <span class="keyword">for</span> (String children : childrenList) &#123;</div><div class="line">                <span class="keyword">if</span> (children.startsWith(lockKey)) &#123;</div><div class="line">                    lockNodes.add(children);</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            <span class="comment">//排序</span></div><div class="line">            Collections.sort(lockNodes);</div><div class="line">            <span class="comment">//如当前节点为最小节点，则成功获取锁</span></div><div class="line">            <span class="keyword">if</span> (currentNode.equals(lockNodes.get(<span class="number">0</span>))) &#123;</div><div class="line">                locked = <span class="keyword">true</span>;</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">return</span> locked;</div><div class="line">        &#125; <span class="keyword">catch</span> (InterruptedException | KeeperException e) &#123;</div><div class="line">            logger.<span class="keyword">error</span>(e.getMessage(), e);</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(e);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Zookeeper分布式锁</div><div class="line">     * 实现思路：</div><div class="line">     * 使用Zookeeper最小节点的方式</div><div class="line">     * 执行过程：</div><div class="line">     * 1、创建根节点，在根节点下创建顺序节点</div><div class="line">     * 2、如当前创建的节点为根节点的所有子节点中最小的，则获取锁成功；</div><div class="line">     * 否则，找到当前节点的前一个节点，watch前一个节点，当前一个节点被删除时获得锁；另外，等待超时也不能获得锁</div><div class="line">     */</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">boolean</span> <span class="title">tryLock</span><span class="params">(<span class="keyword">long</span> time, TimeUnit unit)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">        <span class="comment">//等待锁</span></div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="keyword">if</span> (tryLock()) &#123;</div><div class="line">                <span class="keyword">return</span> locked;</div><div class="line">            &#125;</div><div class="line">            <span class="comment">//找到当前节点的前一个节点</span></div><div class="line">            waitNode = lockNodes.get(Collections.binarySearch(lockNodes, currentNode) - <span class="number">1</span>);</div><div class="line">            waitLock(time, unit);</div><div class="line">            <span class="keyword">return</span> locked;</div><div class="line">        &#125; <span class="keyword">catch</span> (KeeperException e) &#123;</div><div class="line">            logger.<span class="keyword">error</span>(e.getMessage(), e);</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(e);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 释放锁</div><div class="line">     */</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">void</span> <span class="title">unlock</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            zooKeeper.delete(lockNamespace + <span class="string">"/"</span> + currentNode, <span class="number">-1</span>);</div><div class="line">            zooKeeper.close();</div><div class="line">            locked = <span class="keyword">false</span>;</div><div class="line">        &#125; <span class="keyword">catch</span> (InterruptedException | KeeperException e) &#123;</div><div class="line">            logger.<span class="keyword">error</span>(e.getMessage(), e);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="keyword">public</span> <span class="function">Condition <span class="title">newCondition</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 等待锁</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">void</span> <span class="title">waitLock</span><span class="params">(<span class="keyword">long</span> time, TimeUnit unit)</span> <span class="keyword">throws</span> KeeperException, InterruptedException </span>&#123;</div><div class="line">        String waitLock = lockNamespace + <span class="string">"/"</span> + waitNode;</div><div class="line">        logger.debug(<span class="string">"等待锁 &#123;&#125; 释放"</span>, waitLock);</div><div class="line"></div><div class="line">        Stat stat = zooKeeper.exists(waitLock, watchedEvent -&gt; &#123;</div><div class="line">            <span class="keyword">if</span> (countDownLatch != <span class="keyword">null</span>) &#123;</div><div class="line">                locked = <span class="keyword">true</span>;</div><div class="line">                countDownLatch.countDown();</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line"></div><div class="line">        <span class="comment">//前一个节点此刻存在，等待，节点消失则成功获取锁</span></div><div class="line">        <span class="keyword">if</span> (stat != <span class="keyword">null</span>) &#123;</div><div class="line">            countDownLatch = <span class="keyword">new</span> CountDownLatch(<span class="number">1</span>);</div><div class="line">            countDownLatch.await(time, unit);</div><div class="line">            countDownLatch = <span class="keyword">null</span>;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            <span class="comment">//前一个节点此刻不存在，获得锁</span></div><div class="line">            locked = <span class="keyword">true</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 确保根节点存在</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">void</span> <span class="title">ensureNameSpaceExist</span><span class="params">(String lockNamespace)</span> <span class="keyword">throws</span> KeeperException, InterruptedException </span>&#123;</div><div class="line">        Stat statS = zooKeeper.exists(lockNamespace, <span class="keyword">false</span>);</div><div class="line">        <span class="keyword">if</span> (statS == <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="comment">//如果根节点不存在，创建</span></div><div class="line">            zooKeeper.create(lockNamespace, <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">0</span>], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 确保zookeeper连接成功，防止出现连接还未完成就执行zookeeper的get/create/exsit操作出现错误KeeperErrorCode = ConnectionLoss</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">void</span> <span class="title">ensureZookeeperConnect</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">        CountDownLatch connectedLatch = <span class="keyword">new</span> CountDownLatch(<span class="number">1</span>);</div><div class="line">        zooKeeper.register(watchedEvent -&gt; &#123;</div><div class="line">            <span class="keyword">if</span> (watchedEvent.getState() == Watcher.Event.KeeperState.SyncConnected) &#123;</div><div class="line">                connectedLatch.countDown();</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">        <span class="comment">//zookeeper连接中则等待</span></div><div class="line">        <span class="keyword">if</span> (ZooKeeper.States.CONNECTING == zooKeeper.getState()) &#123;</div><div class="line">            connectedLatch.await();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h1 id="3、最后"><a href="#3、最后" class="headerlink" title="3、最后"></a>3、最后</h1><p>另外推荐Redis、Zookeeper分布式锁的第三方实现Redisson、Curator锁。</p>
-<p><a href="https://github.com/vickze/vickze-lock" target="_blank" rel="external">完整代码（包括单元测试以及Redisson、Curator锁的使用）</a></p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
+        <div class="article-info info-on-right">
+          
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Redis</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Docker</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">Java</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Mysql</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">ZooKeeper</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">分布式锁</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">主从</a>
         		</li>
       		
 		</ul>
 	</div>
 
-      
+          
 
-      
-
-      
-        
-<div class="share-btn share-icons tooltip-left">
-  <div class="tooltip tooltip-east">
-    <span class="tooltip-item">
-      <a href="javascript:;" class="share-sns share-outer">
-        <i class="icon icon-share"></i>
-      </a>
-    </span>
-    <span class="tooltip-content">
-      <div class="share-wrap">
-        <div class="share-icons">
-          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
-            <i class="icon icon-weibo"></i>
-          </a>
-          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
-            <i class="icon icon-weixin"></i>
-          </a>
-          <a class="qq share-sns" href="javascript:;" data-type="qq">
-            <i class="icon icon-qq"></i>
-          </a>
-          <a class="douban share-sns" href="javascript:;" data-type="douban">
-            <i class="icon icon-douban"></i>
-          </a>
-          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
-            <i class="icon icon-qzone"></i>
-          </a>
-          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
-            <i class="icon icon-facebook"></i>
-          </a>
-          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
-            <i class="icon icon-twitter"></i>
-          </a>
-          <a class="google share-sns" href="javascript:;" data-type="google">
-            <i class="icon icon-google"></i>
-          </a>
         </div>
-      </div>
-    </span>
-  </div>
-</div>
-
-<div class="page-modal wx-share js-wx-box">
-    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
-    <p>扫一扫，分享到微信</p>
-    <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://blog.yk95.top/2018/01/12/Java实现Redis、Zookeeper分布式锁/" alt="微信分享二维码">
-    </div>
-</div>
-
-<div class="mask js-mask"></div>
-      
-      <div class="clearfix"></div>
-    </div>
+        <div class="clearfix"></div>
+    </header>
   </div>
 </article>
-
-  
-<nav id="article-nav">
-  
-    <a href="/2018/01/30/成为Java顶尖程序员，先过了下面问题！（答案）/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          成为Java顶尖程序员，先过了下面问题！（答案）
-        
-      </div>
-    </a>
   
   
-    <a href="/2017/05/30/使用Hexo搭建个人Github博客/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">使用Hexo搭建个人Github博客</div>
-      <i class="icon-circle-right"></i>
-    </a>
-  
-</nav>
-
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-        <div class="toc-container tooltip-left">
-            <i class="icon-font icon-category"></i>
-            <div class="tooltip tooltip-east">
-                <span class="tooltip-item">
-                </span>
-                <span class="tooltip-content">
-                    <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#"><span class="toc-number">1.</span> <span class="toc-text"></span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#1、Reids分布式锁"><span class="toc-number"></span> <span class="toc-text">1、Reids分布式锁</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2、Zookeeper分布式锁"><span class="toc-number"></span> <span class="toc-text">2、Zookeeper分布式锁</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3、最后"><span class="toc-number"></span> <span class="toc-text">3、最后</span></a>
-                    </div>
-                </span>
-            </div>
-        </div>
-        
-    </div>
-</aside>
-
-
-
-  
-  
+    </div></section>
   
 
-  
-  <div id="SOHUCS" sid="Java实现Redis、Zookeeper分布式锁" ></div> 
-<script charset="utf-8" type="text/javascript" src="//changyan.sohu.com/upload/changyan.js" ></script>
-<script type="text/javascript">
-    window.changyan.api.config({
-        appid: "cyt264yFm",
-        conf: "prod_7507cff17be98b60537359862fe5f3a6"
-    });
-</script>
-</script>
-  
-
-  
-
-  
+    
 
 
           </div>
@@ -368,8 +239,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: true,
-		isArchive: false,
+		isPost: false,
+		isArchive: true,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
