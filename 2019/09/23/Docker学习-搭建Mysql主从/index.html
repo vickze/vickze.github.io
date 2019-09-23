@@ -6,20 +6,20 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://blog.yk95.top">
-  <title>vickze&#39;blog</title>
+  <title>Docker学习-搭建Mysql主从 | vickze&#39;blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="1docker cp mysql:/etc/mysql /etc/mysql 创建/etc/mysql/mysql_master、/etc/mysql/mysql_slave目录，将/etc/mysql中拷贝至这两个文件夹 修改/etc/mysql/mysql_master/my.cnf文件，添加以下配置内容 123[mysqld]log-bin=mysql-binserver-id=1 启动my">
-<meta name="keywords" content="前端,js,jquery,javascript,html5,开发者,程序猿,程序媛,极客,编程,代码,开源,IT网站,Developer,Programmer,Coder,Geek,html,css,css3,用户体验">
+  <meta name="description" content="Docker搭建Mysql主从">
+<meta name="keywords" content="Docker,Mysql,主从">
 <meta property="og:type" content="article">
-<meta property="og:title" content="vickze&#39;blog">
-<meta property="og:url" content="http://blog.yk95.top/2019/02/20/Mysql主从/index.html">
+<meta property="og:title" content="Docker学习-搭建Mysql主从">
+<meta property="og:url" content="http://blog.yk95.top/2019/09/23/Docker学习-搭建Mysql主从/index.html">
 <meta property="og:site_name" content="vickze&#39;blog">
-<meta property="og:description" content="1docker cp mysql:/etc/mysql /etc/mysql 创建/etc/mysql/mysql_master、/etc/mysql/mysql_slave目录，将/etc/mysql中拷贝至这两个文件夹 修改/etc/mysql/mysql_master/my.cnf文件，添加以下配置内容 123[mysqld]log-bin=mysql-binserver-id=1 启动my">
+<meta property="og:description" content="Docker搭建Mysql主从">
 <meta property="og:image" content="http://blog.yk95.top/static/img/mysql_slave.jpg">
-<meta property="og:updated_time" content="2019-02-20T07:04:45.978Z">
+<meta property="og:updated_time" content="2019-09-23T07:10:57.976Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="vickze&#39;blog">
-<meta name="twitter:description" content="1docker cp mysql:/etc/mysql /etc/mysql 创建/etc/mysql/mysql_master、/etc/mysql/mysql_slave目录，将/etc/mysql中拷贝至这两个文件夹 修改/etc/mysql/mysql_master/my.cnf文件，添加以下配置内容 123[mysqld]log-bin=mysql-binserver-id=1 启动my">
+<meta name="twitter:title" content="Docker学习-搭建Mysql主从">
+<meta name="twitter:description" content="Docker搭建Mysql主从">
 <meta name="twitter:image" content="http://blog.yk95.top/static/img/mysql_slave.jpg">
   
     <link rel="alternative" href="/atom.xml" title="vickze&#39;blog" type="application/atom+xml">
@@ -142,20 +142,36 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-Mysql主从" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-Docker学习-搭建Mysql主从" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Docker学习-搭建Mysql主从
+    </h1>
+  
+
+        
+        <a href="/2019/09/23/Docker学习-搭建Mysql主从/" class="archive-article-date">
+  	<time datetime="2019-09-22T16:00:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-09-23</time>
+</a>
+        
+      </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker cp <span class="string">mysql:</span><span class="regexp">/etc/</span>mysql <span class="regexp">/etc/</span>mysql</div></pre></td></tr></table></figure>
-<p>创建/etc/mysql/mysql_master、/etc/mysql/mysql_slave目录，将/etc/mysql中拷贝至这两个文件夹</p>
+        <p>前提：已有一个名为mysql的容器</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker cp <span class="string">mysql:</span><span class="regexp">/etc/</span>mysql <span class="regexp">/etc/</span>mysql</div></pre></td></tr></table></figure>
+<p>创建/etc/mysql/mysql_master、/etc/mysql/mysql_slave目录，将mysql容器中的/etc/mysql中拷贝至这两个文件夹</p>
 <p>修改/etc/mysql/mysql_master/my.cnf文件，添加以下配置内容</p>
 <figure class="highlight ini"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="section">[mysqld]</span></div><div class="line"><span class="attr">log-bin</span>=mysql-bin</div><div class="line"><span class="attr">server-id</span>=<span class="number">1</span></div></pre></td></tr></table></figure>
-<p>启动mysql_master</p>
+<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><h2 id="创建主库"><a href="#创建主库" class="headerlink" title="创建主库"></a>创建主库</h2><p>启动mysql_master</p>
 <figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker <span class="keyword">run</span><span class="bash"> --name mysql_master -v /etc/mysql/mysql_master:/etc/mysql -p 3307:3306 <span class="_">-e</span> MYSQL_ROOT_PASSWORD=123456 <span class="_">-d</span> mysql</span></div></pre></td></tr></table></figure>
 <p>修改/etc/mysql/mysql_slave/my.cnf文件，添加以下配置内容</p>
 <figure class="highlight ini"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="section">[mysqld]</span></div><div class="line"><span class="attr">server-id</span>=<span class="number">2</span></div></pre></td></tr></table></figure>
-<p>启动mysql_slave</p>
+<h2 id="创建从库"><a href="#创建从库" class="headerlink" title="创建从库"></a>创建从库</h2><p>启动mysql_slave</p>
 <figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker <span class="keyword">run</span><span class="bash"> --name mysql_slave -v /etc/mysql/mysql_slave:/etc/mysql -p 3308:3306 <span class="_">-e</span> MYSQL_ROOT_PASSWORD=123456 <span class="_">-d</span> mysql</span></div></pre></td></tr></table></figure>
 <p>进入mysql_master</p>
 <figure class="highlight armasm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="symbol">docker</span> exec -<span class="keyword">it </span>mysql_master <span class="keyword">bash</span></div><div class="line"></div><div class="line"><span class="symbol">mysql</span> -u root -p</div></pre></td></tr></table></figure>
@@ -166,6 +182,7 @@
 <p>CHANGE MASTER TO<br>MASTER_HOST=’192.168.244.137’,<br>MASTER_USER=’slave’,<br>MASTER_PORT=3307,<br>MASTER_PASSWORD=’123456’,<br>MASTER_LOG_FILE=’mysql-bin.000003’,<br>MASTER_LOG_POS=409;<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div></pre></td></tr></table></figure></p>
 <p>start slave;</p>
 <p>show slave status\G;<br>```</p>
+<p>出现下图说明成功</p>
 <p><img src="/static/img/mysql_slave.jpg" alt=""></p>
 
       
@@ -175,6 +192,25 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Docker</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Mysql</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">主从</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
@@ -225,7 +261,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://blog.yk95.top/2019/02/20/Mysql主从/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://blog.yk95.top/2019/09/23/Docker学习-搭建Mysql主从/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -261,6 +297,19 @@
         </div>
         
         
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#"><span class="toc-number">1.</span> <span class="toc-text"></span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建主库"><span class="toc-number">2.</span> <span class="toc-text">创建主库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建从库"><span class="toc-number">3.</span> <span class="toc-text">创建从库</span></a></li></ol>
+                    </div>
+                </span>
+            </div>
+        </div>
+        
     </div>
 </aside>
 
@@ -271,7 +320,7 @@
   
 
   
-  <div id="SOHUCS" sid="Mysql主从" ></div> 
+  <div id="SOHUCS" sid="Docker学习-搭建Mysql主从" ></div> 
 <script charset="utf-8" type="text/javascript" src="//changyan.sohu.com/upload/changyan.js" ></script>
 <script type="text/javascript">
     window.changyan.api.config({
@@ -422,6 +471,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">SpringBoot</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">主从</a>
               </li>
              
               <li class="article-tag-list-item">
