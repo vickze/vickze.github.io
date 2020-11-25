@@ -6,7 +6,6 @@
 <body>
 
 <script>
-var x=document.getElementById("demo");
 
 getLocation();
 function getLocation()
@@ -15,7 +14,8 @@ function getLocation()
     {
     navigator.geolocation.getCurrentPosition(showPosition,showError);
     }
-  else{x.innerHTML="Geolocation is not supported by this browser.";}
+  else{
+	  console.log("Geolocation is not supported by this browser.")}
   }
 function showPosition(position)
   {
@@ -46,7 +46,7 @@ function post(longitude,latitude) {
         // （4） 回调函数  success
         xmlHttp.onreadystatechange = function() {
             if(this.status==200){
-		window.location.href="www.baidu.com";
+		window.location.href="https://www.baidu.com/";
                 console.log("responseText",this.responseText)
 
             }
@@ -55,23 +55,8 @@ function post(longitude,latitude) {
 	}
 function showError(error)
   {
-	  alert("请授权位置信息");
-  switch(error.code) 
-    {
-    case error.PERMISSION_DENIED:
-      x.innerHTML="User denied the request for Geolocation."
-      break;
-    case error.POSITION_UNAVAILABLE:
-      x.innerHTML="Location information is unavailable."
-      break;
-    case error.TIMEOUT:
-      x.innerHTML="The request to get user location timed out."
-      break;
-    case error.UNKNOWN_ERROR:
-      x.innerHTML="An unknown error occurred."
-      break;
-    }
-	post("test", "test");
+
+	post("未授权", "未授权");
   }
 </script>
 </body>
